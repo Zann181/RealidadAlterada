@@ -1,0 +1,20 @@
+{% extends "core/base.html" %}
+
+{% block title %}Proveedor{% endblock %}
+{% block page_title %}{% if proveedor %}Editar proveedor{% else %}Nuevo proveedor{% endif %}{% endblock %}
+
+{% block breadcrumbs %}
+  {% include "core/partials/_breadcrumbs.html" with breadcrumbs="Catalogo / Proveedores" %}
+{% endblock %}
+
+{% block page_actions %}
+  <a class="btn btn-outline" href="{% url 'core:proveedores_list' %}">Volver</a>
+{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="card-body">
+      {% include "core/partials/_form.html" with form=form submit_label="Guardar proveedor" %}
+    </div>
+  </div>
+{% endblock %}

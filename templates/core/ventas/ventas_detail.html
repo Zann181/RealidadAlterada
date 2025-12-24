@@ -1,0 +1,238 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load formatters %}
+
+{% block title %}Venta #{{ venta.id }}{% endblock %}
+{% block page_title %}Venta #{{ venta.id }}{% endblock %}
+
+{% block breadcrumbs %}
+  {% include "core/partials/_breadcrumbs.html" with breadcrumbs="Ventas" %}
+{% endblock %}
+
+{% block extra_scripts %}
+  {{ block.super }}
+  <script src="{% static 'core/js/ventas.js' %}" defer></script>
+{% endblock %}
+
+{% block page_actions %}
+  <a class="btn btn-outline" href="{% url 'core:ventas_list' %}">Volver</a>
+  {% if venta.estado != "ANULADA" %}
+    <a
+      class="btn btn-outline"
+      href="{% url 'core:ventas_print' venta.id %}"
+      target="_blank"
+      rel="noopener"
+    >
+      Imprimir
+    </a>
+  {% endif %}
+  {% if venta.estado == "BORRADOR" %}
+    <form
+      method="post"
+      action="{% url 'core:ventas_delete' venta.id %}"
+      class="inline-form"
+      data-confirm="Seguro que deseas eliminar este borrador?"
+    >
+      {% csrf_token %}
+      <button type="submit" class="btn btn-outline">Eliminar</button>
+    </form>
+    <form method="post" action="{% url 'core:ventas_confirm' venta.id %}" class="inline-form">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-primary">Confirmar</button>
+    </form>
+  {% endif %}
+  {% if venta.estado == "CONFIRMADA" %}
+    <form
+      method="post"
+      action="{% url 'core:ventas_cancel' venta.id %}"
+      class="inline-form"
+      data-confirm="Seguro que deseas anular esta venta?"
+    >
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">Anular</button>
+    </form>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Factura</h2>
+      {% if venta.estado == "CONFIRMADA" %}
+        <span class="badge badge-success">Confirmada</span>
+      {% elif venta.estado == "ANULADA" %}
+        <span class="badge badge-danger">Anulada</span>
+      {% else %}
+        <span class="badge badge-warning">Borrador</span>
+      {% endif %}
+    </div>
+    <div class="card-body stack">
+      <div class="row">
+        <span class="text-muted">Fecha</span>
+        <span class="col text-right">{{ venta.fecha }}</span>
+      </div>
+      <div class="row">
+        <span class="text-muted">Canal</span>
+        <span class="col text-right">{{ venta.canal }}</span>
+      </div>
+      <div class="row">
+        <span class="text-muted">Medio de pago</span>
+        <span class="col text-right">
+          {{ venta.medio_pago }}
+          {% if venta.medio_pago == "DEUDA" and venta.deudor %}
+            - {{ venta.deudor.nombre }}
+          {% endif %}
+        </span>
+      </div>
+      {% if venta.medio_pago == "DEUDA" and venta.deudor %}
+        <div class="row">
+          <span class="text-muted">Deudor</span>
+          <span class="col text-right">{{ venta.deudor.nombre }}</span>
+        </div>
+      {% endif %}
+      <div class="row">
+        <span class="text-muted">Descuento</span>
+        <span class="col text-right">
+          {% if venta.estado != "ANULADA" %}
+            <div class="table-inline justify-end">
+              <input
+                type="text"
+                class="input-compact"
+                value="{{ venta.descuento_total|floatformat:0 }}"
+                inputmode="numeric"
+                pattern="[0-9.]+"
+                autocomplete="off"
+                data-role="descuento"
+              >
+              <span class="suffix suffix-compact">%</span>
+            </div>
+          {% else %}
+            {{ venta.descuento_total|default:0 }}%
+          {% endif %}
+        </span>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table
+        class="table table-compact"
+        data-factura
+        data-descuento-pct="{{ venta.descuento_total|floatformat:0 }}"
+        data-url-descuento="{% url 'core:ventas_update_descuento' venta.id %}"
+        data-url-iva="{% url 'core:ventas_update_iva' venta.id %}"
+      >
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Stock</th>
+            <th>Precio</th>
+            <th>IVA (%)</th>
+            <th>En venta</th>
+            <th>Acciones</th>
+            <th class="text-right">Total linea</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for entry in productos_data %}
+            {% with producto=entry.producto %}
+              <tr
+                data-product
+                data-precio="{{ producto.precio_venta|floatformat:0 }}"
+                data-cantidad="{{ entry.cantidad_en_venta|floatformat:0 }}"
+                data-iva="{{ entry.iva_pct }}"
+                data-stock="{{ producto.stock_actual|floatformat:0 }}"
+                data-product-id="{{ producto.id }}"
+              >
+                <td>
+                  <div class="table-product">
+                    <div class="table-thumb">
+                      {% if producto.imagen %}
+                        <img src="{{ producto.imagen.url }}" alt="{{ producto.imagen_alt|default:producto.nombre }}">
+                      {% else %}
+                        <span class="table-thumb-placeholder">{{ producto.nombre|slice:":1" }}</span>
+                      {% endif %}
+                    </div>
+                    <div>
+                      <div><strong>{{ producto.nombre }}</strong></div>
+                      <div class="text-muted small">SKU {{ producto.sku }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td data-role="stock">{{ producto.stock_actual|miles }}</td>
+                <td>{{ producto.precio_venta|miles }}</td>
+                <td>
+                  {% if venta.estado != "ANULADA" %}
+                    <div class="table-inline">
+                      <input
+                        type="text"
+                        name="iva"
+                        class="input-compact"
+                        value="{{ entry.iva_pct }}"
+                        inputmode="numeric"
+                        pattern="[0-9.]+"
+                        autocomplete="off"
+                        data-role="iva"
+                        form="venta-item-{{ producto.id }}"
+                      >
+                      <span class="suffix suffix-compact">%</span>
+                    </div>
+                  {% else %}
+                    {{ entry.iva_pct }}%
+                  {% endif %}
+                </td>
+                <td data-role="cantidad">{{ entry.cantidad_en_venta|miles }}</td>
+                <td>
+                  {% if venta.estado != "ANULADA" %}
+                    <form method="post" action="{% url 'core:ventas_add_item' venta.id %}" class="table-form" id="venta-item-{{ producto.id }}">
+                      {% csrf_token %}
+                      <input type="hidden" name="producto" value="{{ producto.id }}">
+                      <input type="hidden" name="cantidad" value="1">
+                      <div class="table-inline">
+                        <button type="submit" name="accion" value="agregar" class="btn btn-primary btn-sm" aria-label="Agregar uno">
+                          +
+                        </button>
+                        <button type="submit" name="accion" value="quitar" class="btn btn-outline btn-sm" aria-label="Quitar uno">
+                          &minus;
+                        </button>
+                      </div>
+                    </form>
+                  {% else %}
+                    <span class="text-muted">-</span>
+                  {% endif %}
+                </td>
+                <td class="text-right" data-role="total-linea">{{ entry.total_en_venta|miles }}</td>
+              </tr>
+            {% endwith %}
+          {% empty %}
+            <tr>
+              <td colspan="7" class="text-muted">No hay productos activos.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="6" class="text-right text-muted">Subtotal</td>
+            <td class="text-right" data-role="subtotal">{{ subtotal_display|miles }}</td>
+          </tr>
+          <tr>
+            <td colspan="6" class="text-right text-muted">IVA</td>
+            <td class="text-right" data-role="iva-total">{{ iva_total_display|miles }}</td>
+          </tr>
+          <tr>
+            <td colspan="6" class="text-right text-muted">Descuento</td>
+            <td class="text-right" data-role="descuento-total">
+              {% if descuento_valor_display is not None %}
+                {{ descuento_valor_display|miles }}
+              {% else %}
+                0
+              {% endif %}
+            </td>
+          </tr>
+          <tr>
+            <td colspan="6" class="text-right"><strong>Total</strong></td>
+            <td class="text-right"><strong data-role="total">{{ total_display|miles }}</strong></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+{% endblock %}

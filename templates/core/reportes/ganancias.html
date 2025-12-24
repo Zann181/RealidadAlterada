@@ -1,0 +1,23 @@
+{% extends "core/base.html" %}
+
+{% block title %}Reporte de ganancias{% endblock %}
+{% block page_title %}Reporte de ganancias{% endblock %}
+
+{% block breadcrumbs %}
+  {% include "core/partials/_breadcrumbs.html" with breadcrumbs="Reportes / Ganancias" %}
+{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Top ganancias</h2>
+    </div>
+    <div class="card-body">
+      {% if data %}
+        <pre>{{ data }}</pre>
+      {% else %}
+        <p class="text-muted">Sin datos para mostrar.</p>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

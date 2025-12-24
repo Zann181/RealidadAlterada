@@ -1,0 +1,7 @@
+<div class="messages messages-floating" data-toast-container aria-live="polite" aria-atomic="true">
+  {% for message in messages %}
+    <div class="alert {{ message.tags }}" data-toast role="alert">
+      {{ message }}
+    </div>
+  {% endfor %}
+</div>

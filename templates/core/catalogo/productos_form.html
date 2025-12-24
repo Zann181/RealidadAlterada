@@ -1,0 +1,224 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Producto{% endblock %}
+{% block page_title %}{% if producto %}Editar producto{% else %}Nuevo producto{% endif %}{% endblock %}
+
+{% block breadcrumbs %}
+  {% include "core/partials/_breadcrumbs.html" with breadcrumbs="Catalogo / Productos" %}
+{% endblock %}
+
+{% block page_actions %}
+  {% if next_url %}
+    <a class="btn btn-outline" href="{{ next_url }}">Volver</a>
+  {% else %}
+    <a class="btn btn-outline" href="{% url 'core:productos_list' %}">Volver</a>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="card-body">
+      <form class="form" id="producto-form" data-mode="{% if producto %}edit{% else %}create{% endif %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% if next_url %}
+          <input type="hidden" name="next" value="{{ next_url }}">
+        {% endif %}
+        {% if form.non_field_errors %}
+          <div class="alert warning">
+            {% for error in form.non_field_errors %}
+              <div>{{ error }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+        <div class="field{% if form.sku.errors %} has-error{% endif %}">
+          <label for="{{ form.sku.id_for_label }}">{{ form.sku.label }}</label>
+          {{ form.sku }}
+          {% if form.sku.help_text %}
+            <div class="help">{{ form.sku.help_text }}</div>
+          {% endif %}
+          {% for error in form.sku.errors %}
+            <div class="error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="field{% if form.nombre.errors %} has-error{% endif %}">
+          <label for="{{ form.nombre.id_for_label }}">{{ form.nombre.label }}</label>
+          {{ form.nombre }}
+          {% if form.nombre.help_text %}
+            <div class="help">{{ form.nombre.help_text }}</div>
+          {% endif %}
+          {% for error in form.nombre.errors %}
+            <div class="error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="field{% if form.descripcion.errors %} has-error{% endif %}">
+          <label for="{{ form.descripcion.id_for_label }}">{{ form.descripcion.label }}</label>
+          {{ form.descripcion }}
+          {% if form.descripcion.help_text %}
+            <div class="help">{{ form.descripcion.help_text }}</div>
+          {% endif %}
+          {% for error in form.descripcion.errors %}
+            <div class="error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="field{% if form.categoria.errors %} has-error{% endif %}">
+          <label for="{{ form.categoria.id_for_label }}">{{ form.categoria.label }}</label>
+          <div class="field-inline">
+            {{ form.categoria }}
+            <a class="btn btn-outline btn-sm categoria-action" href="{% url 'core:categorias_create' %}?next={{ request.get_full_path|urlencode }}">
+              Nueva
+            </a>
+            <a
+              class="btn btn-outline btn-sm is-disabled categoria-action"
+              href="#"
+              id="categoria-edit"
+              data-url-template="{% url 'core:categorias_update' 0 %}?next={{ request.get_full_path|urlencode }}"
+            >
+              Editar
+            </a>
+          </div>
+          {% if form.categoria.help_text %}
+            <div class="help">{{ form.categoria.help_text }}</div>
+          {% endif %}
+          {% for error in form.categoria.errors %}
+            <div class="error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="field{% if form.proveedor.errors %} has-error{% endif %}">
+          <label for="{{ form.proveedor.id_for_label }}">{{ form.proveedor.label }}</label>
+          {{ form.proveedor }}
+          {% if form.proveedor.help_text %}
+            <div class="help">{{ form.proveedor.help_text }}</div>
+          {% endif %}
+          {% for error in form.proveedor.errors %}
+            <div class="error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="field{% if form.unidad.errors %} has-error{% endif %}">
+          <label for="{{ form.unidad.id_for_label }}">{{ form.unidad.label }}</label>
+          {{ form.unidad }}
+          {% if form.unidad.help_text %}
+            <div class="help">{{ form.unidad.help_text }}</div>
+          {% endif %}
+          {% for error in form.unidad.errors %}
+            <div class="error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="field{% if form.costo_compra.errors %} has-error{% endif %}">
+          <label for="{{ form.costo_compra.id_for_label }}">{{ form.costo_compra.label }}</label>
+          {{ form.costo_compra }}
+          {% if form.costo_compra.help_text %}
+            <div class="help">{{ form.costo_compra.help_text }}</div>
+          {% endif %}
+          {% for error in form.costo_compra.errors %}
+            <div class="error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="field{% if form.precio_venta.errors %} has-error{% endif %}">
+          <label for="{{ form.precio_venta.id_for_label }}">{{ form.precio_venta.label }}</label>
+          {{ form.precio_venta }}
+          {% if form.precio_venta.help_text %}
+            <div class="help">{{ form.precio_venta.help_text }}</div>
+          {% endif %}
+          {% for error in form.precio_venta.errors %}
+            <div class="error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="field{% if form.iva.errors %} has-error{% endif %}">
+          <label for="{{ form.iva.id_for_label }}">{{ form.iva.label }}</label>
+          {{ form.iva }}
+          {% if form.iva.help_text %}
+            <div class="help">{{ form.iva.help_text }}</div>
+          {% endif %}
+          {% for error in form.iva.errors %}
+            <div class="error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="field{% if form.stock_minimo.errors %} has-error{% endif %}">
+          <label for="{{ form.stock_minimo.id_for_label }}">{{ form.stock_minimo.label }}</label>
+          {{ form.stock_minimo }}
+          {% if form.stock_minimo.help_text %}
+            <div class="help">{{ form.stock_minimo.help_text }}</div>
+          {% endif %}
+          {% for error in form.stock_minimo.errors %}
+            <div class="error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="field{% if form.stock_actual.errors %} has-error{% endif %}">
+          <label for="{{ form.stock_actual.id_for_label }}">{{ form.stock_actual.label }}</label>
+          {{ form.stock_actual }}
+          {% if form.stock_actual.help_text %}
+            <div class="help">{{ form.stock_actual.help_text }}</div>
+          {% endif %}
+          {% for error in form.stock_actual.errors %}
+            <div class="error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="field{% if form.imagen.errors %} has-error{% endif %}">
+          <label for="{{ form.imagen.id_for_label }}">{{ form.imagen.label }}</label>
+          {{ form.imagen }}
+          {% if form.imagen.help_text %}
+            <div class="help">{{ form.imagen.help_text }}</div>
+          {% endif %}
+          {% for error in form.imagen.errors %}
+            <div class="error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="field">
+          <label for="imagenes">Imagenes adicionales</label>
+          <input id="imagenes" name="imagenes" type="file" accept="image/*" multiple />
+          <div class="help">Puedes seleccionar varias imagenes (opcional).</div>
+        </div>
+        {% if producto and imagenes_actuales %}
+          <div class="field">
+            <label>Imagenes actuales</label>
+            <div class="image-grid">
+              {% for imagen in imagenes_actuales %}
+                <label class="image-thumb">
+                  {% if imagen.imagen %}
+                    <img src="{{ imagen.imagen.url }}" alt="{{ imagen.imagen_alt|default:producto.nombre }}" />
+                  {% else %}
+                    <div class="product-placeholder">Sin imagen</div>
+                  {% endif %}
+                  <span class="image-thumb-actions">
+                    <input type="checkbox" name="delete_image" value="{{ imagen.id }}" />
+                    <span class="text-muted small">Eliminar</span>
+                  </span>
+                </label>
+              {% endfor %}
+            </div>
+            <div class="help">Marca “Eliminar” y guarda para borrar una imagen.</div>
+          </div>
+        {% endif %}
+        <div class="field{% if form.imagen_alt.errors %} has-error{% endif %}">
+          <label for="{{ form.imagen_alt.id_for_label }}">{{ form.imagen_alt.label }}</label>
+          {{ form.imagen_alt }}
+          {% if form.imagen_alt.help_text %}
+            <div class="help">{{ form.imagen_alt.help_text }}</div>
+          {% endif %}
+          {% for error in form.imagen_alt.errors %}
+            <div class="error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="field{% if form.activo.errors %} has-error{% endif %}">
+          <label for="{{ form.activo.id_for_label }}">{{ form.activo.label }}</label>
+          {{ form.activo }}
+          {% if form.activo.help_text %}
+            <div class="help">{{ form.activo.help_text }}</div>
+          {% endif %}
+          {% for error in form.activo.errors %}
+            <div class="error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Guardar producto</button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_scripts %}
+  {{ block.super }}
+  <script src="{% static 'core/js/catalogo.js' %}" defer></script>
+{% endblock %}

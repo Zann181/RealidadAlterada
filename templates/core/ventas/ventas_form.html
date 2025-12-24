@@ -1,0 +1,169 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Nueva venta{% endblock %}
+{% block page_title %}Nueva venta{% endblock %}
+
+{% block breadcrumbs %}
+  {% include "core/partials/_breadcrumbs.html" with breadcrumbs="Ventas / Nueva" %}
+{% endblock %}
+
+{% block page_actions %}
+  <a class="btn btn-outline" href="{% url 'core:ventas_list' %}">Volver</a>
+{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="card-body">
+      <form class="form" method="post" data-venta-form>
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+          <div class="alert warning">
+            {% for error in form.non_field_errors %}
+              <div>{{ error }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+        <div class="field{% if form.fecha.errors %} has-error{% endif %}">
+          <label for="{{ form.fecha.id_for_label }}">{{ form.fecha.label }}</label>
+          {{ form.fecha }}
+          {% if form.fecha.help_text %}
+            <div class="help">{{ form.fecha.help_text }}</div>
+          {% endif %}
+          {% for error in form.fecha.errors %}
+            <div class="error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="field{% if form.canal.errors %} has-error{% endif %}">
+          <label for="{{ form.canal.id_for_label }}">{{ form.canal.label }}</label>
+          {{ form.canal }}
+          {% if form.canal.help_text %}
+            <div class="help">{{ form.canal.help_text }}</div>
+          {% endif %}
+          {% for error in form.canal.errors %}
+            <div class="error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="field{% if form.medio_pago.errors %} has-error{% endif %}">
+          <label for="{{ form.medio_pago.id_for_label }}">{{ form.medio_pago.label }}</label>
+          {{ form.medio_pago }}
+          {% if form.medio_pago.help_text %}
+            <div class="help">{{ form.medio_pago.help_text }}</div>
+          {% endif %}
+          {% for error in form.medio_pago.errors %}
+            <div class="error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div
+          class="card"
+          data-deuda-fields
+          hidden
+          aria-hidden="true"
+        >
+          <div class="card-header">
+            <h2 class="card-title">Deudor</h2>
+          </div>
+          <div class="card-body stack">
+            <div class="field{% if form.deudor.errors %} has-error{% endif %}">
+              <label for="{{ form.deudor.id_for_label }}">Seleccionar deudor</label>
+              <div class="field-inline">
+                {{ form.deudor }}
+                <button
+                  type="button"
+                  class="btn btn-outline btn-sm"
+                  data-nuevo-deudor-toggle
+                  aria-expanded="false"
+                  aria-controls="nuevo-deudor-panel"
+                >
+                  Agregar deudor
+                </button>
+              </div>
+              {% for error in form.deudor.errors %}
+                <div class="error">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="text-muted small">Si no existe, registra un nuevo deudor.</div>
+            <div
+              class="slide-panel"
+              id="nuevo-deudor-panel"
+              data-nuevo-deudor-panel
+              data-default-open="{% if form.nuevo_deudor_nombre.value or form.nuevo_deudor_telefono.value or form.nuevo_deudor_correo.value or form.nuevo_deudor_documento.value or form.nuevo_deudor_direccion.value or form.nuevo_deudor_nombre.errors or form.nuevo_deudor_telefono.errors or form.nuevo_deudor_correo.errors or form.nuevo_deudor_documento.errors or form.nuevo_deudor_direccion.errors %}true{% else %}false{% endif %}"
+              aria-hidden="true"
+            >
+              <div class="stack">
+                <div class="field{% if form.nuevo_deudor_nombre.errors %} has-error{% endif %}">
+                  <label for="{{ form.nuevo_deudor_nombre.id_for_label }}">{{ form.nuevo_deudor_nombre.label }}</label>
+                  {{ form.nuevo_deudor_nombre }}
+                  {% for error in form.nuevo_deudor_nombre.errors %}
+                    <div class="error">{{ error }}</div>
+                  {% endfor %}
+                </div>
+                <div class="field{% if form.nuevo_deudor_telefono.errors %} has-error{% endif %}">
+                  <label for="{{ form.nuevo_deudor_telefono.id_for_label }}">{{ form.nuevo_deudor_telefono.label }}</label>
+                  {{ form.nuevo_deudor_telefono }}
+                  {% for error in form.nuevo_deudor_telefono.errors %}
+                    <div class="error">{{ error }}</div>
+                  {% endfor %}
+                </div>
+                <div class="field{% if form.nuevo_deudor_correo.errors %} has-error{% endif %}">
+                  <label for="{{ form.nuevo_deudor_correo.id_for_label }}">{{ form.nuevo_deudor_correo.label }}</label>
+                  {{ form.nuevo_deudor_correo }}
+                  {% for error in form.nuevo_deudor_correo.errors %}
+                    <div class="error">{{ error }}</div>
+                  {% endfor %}
+                </div>
+                <div class="field{% if form.nuevo_deudor_documento.errors %} has-error{% endif %}">
+                  <label for="{{ form.nuevo_deudor_documento.id_for_label }}">{{ form.nuevo_deudor_documento.label }}</label>
+                  {{ form.nuevo_deudor_documento }}
+                  {% for error in form.nuevo_deudor_documento.errors %}
+                    <div class="error">{{ error }}</div>
+                  {% endfor %}
+                </div>
+                <div class="field{% if form.nuevo_deudor_direccion.errors %} has-error{% endif %}">
+                  <label for="{{ form.nuevo_deudor_direccion.id_for_label }}">{{ form.nuevo_deudor_direccion.label }}</label>
+                  {{ form.nuevo_deudor_direccion }}
+                  {% for error in form.nuevo_deudor_direccion.errors %}
+                    <div class="error">{{ error }}</div>
+                  {% endfor %}
+                </div>
+                <div class="form-actions">
+                  <button
+                    type="submit"
+                    name="accion"
+                    value="registrar_deudor"
+                    class="btn btn-outline btn-sm"
+                  >
+                    Registrar deudor
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="field{% if form.descuento_total.errors %} has-error{% endif %}">
+          <label for="{{ form.descuento_total.id_for_label }}">{{ form.descuento_total.label }}</label>
+          <div class="field-suffix">
+            {{ form.descuento_total }}
+            <span class="suffix">%</span>
+          </div>
+          {% if form.descuento_total.help_text %}
+            <div class="help">{{ form.descuento_total.help_text }}</div>
+          {% endif %}
+          {% for error in form.descuento_total.errors %}
+            <div class="error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="form-actions">
+          <button type="submit" name="accion" value="crear_venta" class="btn btn-primary">
+            Crear venta
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_scripts %}
+  {{ block.super }}
+  <script src="{% static 'core/js/ventas-form.js' %}" defer></script>
+{% endblock %}

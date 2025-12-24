@@ -1,0 +1,80 @@
+{% extends "core/base.html" %}
+{% load formatters %}
+
+{% block title %}Productos{% endblock %}
+{% block page_title %}Productos{% endblock %}
+
+{% block breadcrumbs %}
+  {% include "core/partials/_breadcrumbs.html" with breadcrumbs="Catalogo / Productos" %}
+{% endblock %}
+
+{% block page_actions %}
+  <a class="btn btn-primary" href="{% url 'core:productos_create' %}">Nuevo producto</a>
+{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Filtros</h2>
+      <form class="search-form" method="get">
+        <input type="search" name="q" placeholder="Buscar producto o SKU" value="{{ request.GET.q }}" />
+        <select name="categoria">
+          <option value="">Todas las categorias</option>
+          {% for categoria in categorias %}
+            <option value="{{ categoria.id }}" {% if categoria_id == categoria.id|stringformat:"s" %}selected{% endif %}>
+              {{ categoria.nombre }}
+            </option>
+          {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-ghost btn-sm">Buscar</button>
+        <a class="btn btn-outline btn-sm" href="{% url 'core:productos_list' %}">Limpiar</a>
+      </form>
+    </div>
+  </div>
+  <div class="grid grid-3 product-grid">
+    {% for producto in productos %}
+      <div class="card product-card">
+        <a class="product-media" href="{% url 'core:productos_detail' producto.id %}">
+          {% if producto.imagen %}
+            <img src="{{ producto.imagen.url }}" alt="{{ producto.imagen_alt|default:producto.nombre }}" />
+          {% else %}
+            <div class="product-placeholder">{{ producto.nombre|slice:":1" }}</div>
+          {% endif %}
+        </a>
+        <div class="card-body stack">
+          <div class="product-header">
+            <a class="product-title" href="{% url 'core:productos_detail' producto.id %}">
+              {{ producto.nombre }}
+            </a>
+            <span class="badge {% if producto.activo %}badge-success{% else %}badge-danger{% endif %}">
+              {% if producto.activo %}Activo{% else %}Inactivo{% endif %}
+            </span>
+          </div>
+          <div class="product-meta text-muted">
+            <span>{{ producto.sku }}</span>
+            <span>{{ producto.categoria.nombre|default:"Sin categoria" }}</span>
+          </div>
+          <div class="product-meta text-muted">
+            <span>Proveedor: {{ producto.proveedor.nombre|default:"-" }}</span>
+            <span>Precio venta: {{ producto.precio_venta|miles }}</span>
+            <span>Stock: {{ producto.stock_actual|miles }}</span>
+          </div>
+          <div class="product-actions row">
+            <a class="btn btn-outline btn-sm" href="{% url 'core:productos_detail' producto.id %}">
+              Ver detalle
+            </a>
+            <a class="btn btn-ghost btn-sm" href="{% url 'core:productos_update' producto.id %}">
+              Editar
+            </a>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="card">
+        <div class="card-body">
+          <p class="text-muted">Sin productos registrados.</p>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}

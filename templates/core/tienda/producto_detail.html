@@ -1,0 +1,132 @@
+{% extends "core/tienda/base_tienda.html" %}
+{% load formatters %}
+
+{% block title %}{{ producto.nombre }} - {{ SITE_NAME }}{% endblock %}
+
+{% block header_tools %}
+  <div class="store-header-tools store-header-tools--detail">
+    <div class="store-detail-head">
+      <a class="btn btn-ghost btn-sm" href="{% url 'core:tienda' %}">Volver</a>
+      <h2 class="store-detail-title">{{ producto.nombre }}</h2>
+    </div>
+  </div>
+{% endblock %}
+
+{% block store_main %}
+  <section class="store-product-detail">
+    <div class="card">
+      <div
+        class="card-body store-product-detail-main"
+        data-product-card
+        data-product-id="{{ producto.id }}"
+        data-product-name="{{ producto.nombre|escapejs }}"
+        data-product-price="{{ producto.precio_venta|floatformat:0 }}"
+        data-product-stock="{{ producto.stock_actual|floatformat:0 }}"
+      >
+        <div class="store-product-detail-media">
+          {% if producto_imagenes %}
+            <div class="store-carousel" data-store-carousel data-carousel-data="product-images">
+              <img
+                src="{{ producto_imagenes.0.url }}"
+                alt="{{ producto_imagenes.0.alt|default:producto.nombre }}"
+                data-carousel-image
+              />
+              {% if producto_imagenes|length > 1 %}
+                <button type="button" class="store-carousel-btn is-prev" data-carousel-prev aria-label="Imagen anterior">
+                  ‹
+                </button>
+                <button type="button" class="store-carousel-btn is-next" data-carousel-next aria-label="Siguiente imagen">
+                  ›
+                </button>
+                <div class="store-carousel-counter" data-carousel-counter>
+                  1 / {{ producto_imagenes|length }}
+                </div>
+              {% endif %}
+            </div>
+            {{ producto_imagenes|json_script:"product-images" }}
+          {% else %}
+            <div class="product-placeholder large">{{ producto.nombre|slice:":1" }}</div>
+          {% endif %}
+        </div>
+
+        <div class="store-product-detail-info">
+          <div class="store-product-detail-top">
+            <h1 class="store-product-detail-name">{{ producto.nombre }}</h1>
+            {% if producto.stock_actual <= 0 %}
+              <span class="stock-badge is-out">Agotado</span>
+            {% elif producto.stock_minimo > 0 and producto.stock_actual <= producto.stock_minimo %}
+              <span class="stock-badge is-low">Stock bajo: {{ producto.stock_actual|miles }}</span>
+            {% else %}
+              <span class="stock-badge is-ok">Stock: {{ producto.stock_actual|miles }}</span>
+          {% endif %}
+          </div>
+
+          <div class="store-product-detail-price">$ {{ producto.precio_venta|miles }}</div>
+
+          <div class="store-product-detail-meta text-muted">
+            <span>{{ producto.categoria.nombre|default:"Sin categoria" }}</span>
+          </div>
+
+          {% if producto.descripcion %}
+            <div class="store-product-detail-desc">
+              {{ producto.descripcion|linebreaksbr }}
+            </div>
+          {% endif %}
+
+          <div class="store-actions store-actions--detail">
+            <div class="qty-stepper">
+              <button type="button" class="btn btn-ghost btn-sm" data-qty-dec {% if producto.stock_actual <= 0 %}disabled{% endif %}>-</button>
+              <input
+                type="number"
+                class="input-compact"
+                min="1"
+                max="{{ producto.stock_actual|floatformat:0 }}"
+                value="1"
+                step="1"
+                inputmode="numeric"
+                data-qty-input
+                {% if producto.stock_actual <= 0 %}disabled{% endif %}
+              />
+              <button type="button" class="btn btn-ghost btn-sm" data-qty-inc {% if producto.stock_actual <= 0 %}disabled{% endif %}>+</button>
+            </div>
+            <button
+              type="button"
+              class="btn btn-primary{% if producto.stock_actual <= 0 %} is-disabled{% endif %}"
+              data-add-cart
+              {% if producto.stock_actual <= 0 %}disabled{% endif %}
+            >
+              Agregar al carrito
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <aside class="store-product-detail-side">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Recomendados</h2>
+        </div>
+        <div class="card-body stack">
+          {% for item in recomendados %}
+            <a class="recommended-item" href="{% url 'core:tienda_producto_detail' item.id %}">
+              <div class="recommended-thumb">
+                {% if item.imagen %}
+                  <img src="{{ item.imagen.url }}" alt="{{ item.imagen_alt|default:item.nombre }}" />
+                {% else %}
+                  <span class="recommended-placeholder">{{ item.nombre|slice:":1" }}</span>
+                {% endif %}
+              </div>
+              <div class="recommended-info">
+                <strong>{{ item.nombre }}</strong>
+                <span class="text-muted small">$ {{ item.precio_venta|miles }}</span>
+              </div>
+            </a>
+          {% empty %}
+            <div class="text-muted">Sin recomendaciones por ahora.</div>
+          {% endfor %}
+        </div>
+      </div>
+    </aside>
+  </section>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "core/base.html" %}
+
+{% block title %}Categoria{% endblock %}
+{% block page_title %}{% if categoria %}Editar categoria{% else %}Nueva categoria{% endif %}{% endblock %}
+
+{% block breadcrumbs %}
+  {% include "core/partials/_breadcrumbs.html" with breadcrumbs="Catalogo / Categorias" %}
+{% endblock %}
+
+{% block page_actions %}
+  <a class="btn btn-outline" href="{% url 'core:categorias_list' %}">Volver</a>
+{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="card-body">
+      {% include "core/partials/_form.html" with form=form submit_label="Guardar categoria" %}
+    </div>
+  </div>
+{% endblock %}

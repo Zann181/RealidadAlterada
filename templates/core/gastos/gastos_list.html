@@ -1,0 +1,148 @@
+{% extends "core/base.html" %}
+{% load formatters %}
+
+{% block title %}Gastos{% endblock %}
+{% block page_title %}Gastos{% endblock %}
+
+{% block breadcrumbs %}
+  {% include "core/partials/_breadcrumbs.html" with breadcrumbs="Gastos" %}
+{% endblock %}
+
+{% block page_actions %}
+  <a class="btn btn-outline" href="{% url 'core:dashboard' %}">Volver</a>
+{% endblock %}
+
+{% block content %}
+  <div class="grid grid-2">
+    <div class="stack">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Registrar gasto</h2>
+          <button class="btn btn-outline btn-sm" type="button" data-modal-open="#categoria-gasto-modal">
+            Nueva categoria
+          </button>
+        </div>
+        <div class="card-body">
+          <form class="form" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="gasto">
+            {% if form.non_field_errors %}
+              <div class="alert warning">
+                {% for error in form.non_field_errors %}
+                  <div>{{ error }}</div>
+                {% endfor %}
+              </div>
+            {% endif %}
+            {% for field in form %}
+              <div class="field{% if field.errors %} has-error{% endif %}">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                  <div class="help">{{ field.help_text }}</div>
+                {% endif %}
+                {% for error in field.errors %}
+                  <div class="error">{{ error }}</div>
+                {% endfor %}
+              </div>
+            {% endfor %}
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Registrar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Listado de gastos</h2>
+        <form class="search-form" method="get">
+          <select name="period">
+            <option value="" {% if not period %}selected{% endif %}>Todo</option>
+            <option value="dia" {% if period == "dia" %}selected{% endif %}>Dia</option>
+            <option value="semana" {% if period == "semana" %}selected{% endif %}>Semana</option>
+            <option value="mes" {% if period == "mes" %}selected{% endif %}>Mes</option>
+            <option value="anio" {% if period == "anio" %}selected{% endif %}>Anio</option>
+          </select>
+          <input type="date" name="fecha" value="{{ fecha }}" />
+          <button type="submit" class="btn btn-ghost btn-sm">Filtrar</button>
+          <a class="btn btn-outline btn-sm" href="{% url 'core:gastos_list' %}">Limpiar</a>
+        </form>
+      </div>
+      <div class="card-body">
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Categoria</th>
+                <th>Valor</th>
+                <th>Medio de pago</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for gasto in gastos %}
+                <tr>
+                  <td>{{ gasto.fecha }}</td>
+                  <td>{{ gasto.categoria_gasto.nombre }}</td>
+                  <td>{{ gasto.valor|miles }}</td>
+                  <td>{{ gasto.medio_pago }}</td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="4" class="text-muted">Sin gastos registrados.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% include "core/partials/_pagination.html" %}
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="modal{% if categoria_form.errors or categoria_form.non_field_errors %} is-open{% endif %}"
+    id="categoria-gasto-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-hidden="{% if categoria_form.errors or categoria_form.non_field_errors %}false{% else %}true{% endif %}"
+    {% if not categoria_form.errors and not categoria_form.non_field_errors %}hidden{% endif %}
+  >
+    <div class="modal-backdrop" data-modal-close></div>
+    <div class="modal-panel">
+      <div class="modal-header">
+        <h2 class="card-title">Nueva categoria de gasto</h2>
+        <button class="btn btn-ghost btn-sm" type="button" data-modal-close>Cerrar</button>
+      </div>
+      <div class="modal-body">
+        <form class="form" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="form_type" value="categoria_gasto">
+          {% if categoria_form.non_field_errors %}
+            <div class="alert warning">
+              {% for error in categoria_form.non_field_errors %}
+                <div>{{ error }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+          {% for field in categoria_form %}
+            <div class="field{% if field.errors %} has-error{% endif %}">
+              <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {% if field.help_text %}
+                <div class="help">{{ field.help_text }}</div>
+              {% endif %}
+              {% for error in field.errors %}
+                <div class="error">{{ error }}</div>
+              {% endfor %}
+            </div>
+          {% endfor %}
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Crear categoria</button>
+            <button type="button" class="btn btn-outline" data-modal-close>Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock %}

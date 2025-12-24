@@ -1,0 +1,75 @@
+{% extends "core/base.html" %}
+
+{% block title %}Deudor{% endblock %}
+{% block page_title %}{% if deudor %}Editar deudor{% else %}Nuevo deudor{% endif %}{% endblock %}
+
+{% block breadcrumbs %}
+  {% include "core/partials/_breadcrumbs.html" with breadcrumbs="Deudores" %}
+{% endblock %}
+
+{% block page_actions %}
+  <a class="btn btn-outline" href="{% url 'core:deudores_list' %}">Volver</a>
+{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="card-body">
+      <form class="form" method="post">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+          <div class="alert warning">
+            {% for error in form.non_field_errors %}
+              <div>{{ error }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+        {% for field in form %}
+          <div class="field{% if field.errors %} has-error{% endif %}">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}
+              <div class="help">{{ field.help_text }}</div>
+            {% endif %}
+            {% for error in field.errors %}
+              <div class="error">{{ error }}</div>
+            {% endfor %}
+          </div>
+        {% endfor %}
+
+        {% if not deudor %}
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Deuda antigua (opcional)</h2>
+            </div>
+            <div class="card-body">
+              {% if deuda_form.non_field_errors %}
+                <div class="alert warning">
+                  {% for error in deuda_form.non_field_errors %}
+                    <div>{{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+              {% for field in deuda_form %}
+                <div class="field{% if field.errors %} has-error{% endif %}">
+                  <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                  {{ field }}
+                  {% if field.help_text %}
+                    <div class="help">{{ field.help_text }}</div>
+                  {% endif %}
+                  {% for error in field.errors %}
+                    <div class="error">{{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endfor %}
+              <div class="help text-muted">Si ingresas un valor, se creara una deuda con ese saldo.</div>
+            </div>
+          </div>
+        {% endif %}
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Guardar deudor</button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

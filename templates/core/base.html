@@ -1,0 +1,45 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}{{ SITE_NAME }}{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'core/css/app.css' %}" />
+    {% block extra_head %}{% endblock %}
+  </head>
+  <body class="theme-dark">
+    <div class="layout">
+      {% include "core/partials/_sidebar.html" %}
+      <div class="main">
+        {% include "core/partials/_topbar.html" %}
+        <main class="content">
+          <div class="container">
+            {% include "core/partials/_messages.html" %}
+            {% block breadcrumbs %}
+              {% include "core/partials/_breadcrumbs.html" %}
+            {% endblock %}
+            <div class="page-head">
+              <div>
+                <h1 class="page-title">
+                  {% block page_title %}{{ page_title|default:"Panel" }}{% endblock %}
+                </h1>
+                {% block page_subtitle %}
+                  {% if page_subtitle %}
+                    <p class="page-subtitle text-muted">{{ page_subtitle }}</p>
+                  {% endif %}
+                {% endblock %}
+              </div>
+              <div class="page-actions">
+                {% block page_actions %}{% endblock %}
+              </div>
+            </div>
+            {% block content %}{% endblock %}
+          </div>
+        </main>
+      </div>
+    </div>
+    <script src="{% static 'core/js/theme.js' %}" defer></script>
+    {% block extra_scripts %}{% endblock %}
+  </body>
+</html>

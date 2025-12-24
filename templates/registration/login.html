@@ -1,0 +1,42 @@
+{% extends "registration/base_auth.html" %}
+
+{% block title %}Iniciar sesion - {{ SITE_NAME }}{% endblock %}
+
+{% block header_title %}Iniciar sesion{% endblock %}
+{% block header_subtitle %}
+  <p class="text-muted">Acceso al sistema de {{ SITE_NAME }}</p>
+{% endblock %}
+
+{% block header_actions %}
+  <div class="row justify-end">
+    <a class="btn btn-ghost btn-sm" href="{% url 'core:tienda' %}">Volver a la tienda</a>
+  </div>
+{% endblock %}
+
+{% block content %}
+  {% if form.non_field_errors %}
+    <div class="alert error">
+      {% for error in form.non_field_errors %}
+        <div>{{ error }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+  <form method="post" class="form">
+    {% csrf_token %}
+    {% if next %}
+      <input type="hidden" name="next" value="{{ next }}" />
+    {% endif %}
+    <div class="field">
+      <label for="{{ form.username.id_for_label }}">Usuario</label>
+      {{ form.username }}
+    </div>
+    <div class="field">
+      <label for="{{ form.password.id_for_label }}">Contrasena</label>
+      {{ form.password }}
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Entrar</button>
+      <a class="btn btn-outline" href="{% url 'core:tienda' %}">Ir a la tienda</a>
+    </div>
+  </form>
+{% endblock %}

@@ -1,0 +1,94 @@
+{% load static %}
+{% load formatters %}
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Factura #{{ venta.id }} | {{ SITE_NAME }}</title>
+    <link rel="stylesheet" href="{% static 'core/css/app.css' %}" />
+  </head>
+  <body class="print-body">
+    <div class="print-actions">
+      <button type="button" class="btn btn-primary btn-sm" data-action="print">Imprimir</button>
+      <a class="btn btn-outline btn-sm" href="{% url 'core:ventas_detail' venta.id %}">Volver</a>
+    </div>
+
+    <section class="print-sheet">
+      <header class="print-header">
+        <div>
+          <h1 class="print-title">{{ SITE_NAME }}</h1>
+          <div class="text-muted">Factura de venta</div>
+        </div>
+        <div class="print-meta">
+          <div><strong>Factura #</strong> {{ venta.id }}</div>
+          <div><strong>Fecha:</strong> {{ venta.fecha }}</div>
+          <div><strong>Canal:</strong> {{ venta.canal }}</div>
+          <div><strong>Medio de pago:</strong> {{ venta.medio_pago }}</div>
+          {% if venta.estado == "ANULADA" %}
+            <div class="badge badge-danger">Anulada</div>
+          {% endif %}
+        </div>
+      </header>
+
+      <div class="table-wrap">
+        <table class="table print-table">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Cantidad</th>
+              <th>Precio (IVA incluido)</th>
+              <th>IVA</th>
+              <th class="text-right">Total linea</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for linea in lineas %}
+              {% with item=linea.item %}
+              <tr>
+                <td>
+                  <div><strong>{{ item.producto.nombre }}</strong></div>
+                  <div class="text-muted small">SKU {{ item.producto.sku }}</div>
+                </td>
+                <td>{{ item.cantidad|miles }}</td>
+                <td>{{ item.precio_unitario|miles }}</td>
+                <td>{{ item.iva|percent:0 }}%</td>
+                <td class="text-right">{{ linea.total_linea|miles }}</td>
+              </tr>
+              {% endwith %}
+            {% empty %}
+              <tr>
+                <td colspan="5" class="text-muted">No hay items registrados.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="4" class="text-right text-muted">Subtotal</td>
+              <td class="text-right">{{ subtotal_display|miles }}</td>
+            </tr>
+            <tr>
+              <td colspan="4" class="text-right text-muted">IVA</td>
+              <td class="text-right">{{ iva_total_display|miles }}</td>
+            </tr>
+            <tr>
+              <td colspan="4" class="text-right text-muted">Descuento</td>
+              <td class="text-right">
+                {% if descuento_valor_display is not None %}
+                  {{ descuento_valor_display|miles }}
+                {% else %}
+                  0
+                {% endif %}
+              </td>
+            </tr>
+            <tr>
+              <td colspan="4" class="text-right"><strong>Total</strong></td>
+              <td class="text-right"><strong>{{ total_display|miles }}</strong></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </section>
+    <script src="{% static 'core/js/print.js' %}" defer></script>
+  </body>
+</html>

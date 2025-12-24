@@ -1,0 +1,140 @@
+{% extends "core/base.html" %}
+{% load formatters %}
+
+{% block title %}Deudor {{ deudor.nombre }}{% endblock %}
+{% block page_title %}{{ deudor.nombre }}{% endblock %}
+
+{% block breadcrumbs %}
+  {% include "core/partials/_breadcrumbs.html" with breadcrumbs="Deudores" %}
+{% endblock %}
+
+{% block page_actions %}
+  <a class="btn btn-outline" href="{% url 'core:deudores_list' %}">Volver</a>
+  <a class="btn btn-outline" href="{% url 'core:deudores_update' deudor.id %}">Editar</a>
+  <a class="btn btn-primary" href="{% url 'core:deuda_cliente_create' deudor.id %}">Nueva deuda</a>
+{% endblock %}
+
+{% block content %}
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Datos</h2>
+      </div>
+      <div class="card-body stack">
+        <div><strong>Telefono:</strong> {{ deudor.telefono|default:"-" }}</div>
+        <div><strong>Correo:</strong> {{ deudor.correo|default:"-" }}</div>
+        <div><strong>Documento:</strong> {{ deudor.documento|default:"-" }}</div>
+        <div><strong>Direccion:</strong> {{ deudor.direccion|default:"-" }}</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Resumen</h2>
+      </div>
+      <div class="card-body stack">
+        <div><strong>Deudas:</strong> {{ deudas|length }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Deudas</h2>
+    </div>
+    <div class="card-body">
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Fecha</th>
+              <th>Estado</th>
+              <th>Descripcion</th>
+              <th>Total</th>
+              <th>Saldo</th>
+              <th class="text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for deuda in deudas %}
+              <tr>
+                <td>#{{ deuda.id }}</td>
+                <td>{{ deuda.fecha }}</td>
+                <td>
+                  {% if deuda.estado == "CERRADA" %}
+                    <span class="badge badge-success">Cerrada</span>
+                  {% elif deuda.estado == "ANULADA" %}
+                    <span class="badge badge-danger">Anulada</span>
+                  {% else %}
+                    <span class="badge badge-warning">Abierta</span>
+                  {% endif %}
+                </td>
+                <td>{{ deuda.descripcion|default:"-" }}</td>
+                <td>{{ deuda.total_inicial|miles }}</td>
+                <td>{{ deuda.saldo_actual|miles }}</td>
+                <td class="text-right">
+                  <a class="btn btn-outline btn-sm" href="{% url 'core:deuda_cliente_detail' deuda.id %}">Ver</a>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="7" class="text-muted">Sin deudas registradas.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Registrar abono</h2>
+      </div>
+      <div class="card-body">
+        {% if abono_form.fields.deuda.queryset %}
+          {% url "core:deudores_abonar" deudor.id as abonar_url %}
+          {% include "core/partials/_form.html" with form=abono_form form_action=abonar_url submit_label="Registrar" %}
+        {% else %}
+          <p class="text-muted">No hay deudas abiertas para registrar abonos.</p>
+        {% endif %}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Abonos recientes</h2>
+      </div>
+      <div class="card-body">
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Deuda</th>
+                <th>Valor</th>
+                <th>Medio</th>
+                <th>Referencia</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for abono in abonos %}
+                <tr>
+                  <td>{{ abono.fecha }}</td>
+                  <td>#{{ abono.deuda_id }}</td>
+                  <td>{{ abono.valor|miles }}</td>
+                  <td>{{ abono.medio_pago }}</td>
+                  <td>{{ abono.referencia|default:"-" }}</td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="5" class="text-muted">Sin abonos registrados.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Acceso - {{ SITE_NAME }}{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'core/css/app.css' %}" />
+    {% block extra_head %}{% endblock %}
+  </head>
+  <body class="theme-dark auth-body">
+    <div class="auth-layout">
+      <div class="auth-card">
+        <div class="auth-logo">
+          {% block logo %}
+            <img src="{% static 'Realidad Alterada.png' %}" alt="{{ SITE_NAME }}" />
+          {% endblock %}
+        </div>
+        <div class="auth-header">
+          <h1>{% block header_title %}Iniciar sesion{% endblock %}</h1>
+          {% block header_subtitle %}
+            <p class="text-muted">Acceso al sistema de {{ SITE_NAME }}</p>
+          {% endblock %}
+        </div>
+
+        {% block header_actions %}{% endblock %}
+
+        {% include "core/partials/_messages.html" %}
+
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+    <script src="{% static 'core/js/theme.js' %}" defer></script>
+    {% block extra_scripts %}{% endblock %}
+  </body>
+</html>
+

@@ -1,0 +1,112 @@
+{% load static %}
+{% load formatters %}
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Tienda - {{ SITE_NAME }}{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'core/css/app.css' %}" />
+  </head>
+  <body class="theme-dark store-body">
+    <div
+      class="store-page"
+      data-store
+      data-checkout-url="{% url 'core:tienda_checkout' %}"
+      data-whatsapp="{{ whatsapp_number }}"
+    >
+      <header class="store-header">
+        <div class="store-header-top">
+          <div class="store-brand">
+            <h1>{{ SITE_NAME }}</h1>
+          </div>
+          <div class="store-contact">
+            <a class="btn btn-outline btn-sm" href="{% url 'login' %}">Ingresar</a>
+          </div>
+        </div>
+        {% block header_tools %}{% endblock %}
+      </header>
+
+      <main class="store-main">
+        {% block store_main %}{% endblock %}
+      </main>
+
+      <div class="cart-drawer" data-cart-drawer aria-hidden="true">
+        <div class="cart-drawer-backdrop" data-cart-close></div>
+        <aside class="cart-panel">
+          <div class="card cart-card">
+            <div class="card-header">
+              <h2 class="card-title">Carrito</h2>
+              <button class="btn btn-ghost btn-sm" type="button" data-cart-close>Cerrar</button>
+            </div>
+            <div class="card-body">
+              <div class="cart-empty text-muted" data-cart-empty>Tu carrito esta vacio.</div>
+              <ul class="cart-items" data-cart-items></ul>
+              <div class="cart-summary">
+                <span>Total</span>
+                <strong data-cart-total>$ 0</strong>
+              </div>
+              <div class="form cart-form">
+                <div class="field">
+                  <label for="cliente-nombre">Nombre</label>
+                  <input id="cliente-nombre" type="text" placeholder="Tu nombre" data-customer-name />
+                </div>
+                <div class="field">
+                  <label for="cliente-telefono">Telefono</label>
+                  <input id="cliente-telefono" type="tel" placeholder="Numero de contacto" data-customer-phone />
+                </div>
+                <div class="field">
+                  <label for="cliente-correo">Correo</label>
+                  <input id="cliente-correo" type="email" placeholder="Correo" data-customer-email />
+                </div>
+                <div class="field">
+                  <label for="cliente-nota">Nota</label>
+                  <textarea id="cliente-nota" rows="3" placeholder="Observaciones" data-customer-note></textarea>
+                </div>
+              </div>
+              <div class="cart-status" data-cart-status></div>
+              <button class="btn btn-primary" type="button" data-checkout>Comprar por WhatsApp</button>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <a
+        class="whatsapp-fab"
+        href="https://api.whatsapp.com/send/?phone={{ whatsapp_number|urlencode }}&type=phone_number&app_absent=0"
+        target="_blank"
+        rel="noopener"
+        aria-label="Abrir WhatsApp"
+      >
+        <svg viewBox="0 0 32 32" aria-hidden="true">
+          <path
+            fill="currentColor"
+            d="M19.11 17.46c-.26-.13-1.55-.77-1.79-.86-.24-.09-.41-.13-.58.13-.17.26-.66.86-.81 1.03-.15.17-.3.2-.56.07-.26-.13-1.08-.4-2.06-1.29-.76-.68-1.28-1.52-1.43-1.77-.15-.26-.02-.4.11-.53.11-.11.26-.3.39-.45.13-.15.17-.26.26-.43.09-.17.04-.32-.02-.45-.06-.13-.58-1.39-.79-1.91-.21-.5-.42-.43-.58-.44-.15 0-.32-.01-.49-.01-.17 0-.45.06-.68.32-.24.26-.9.88-.9 2.15 0 1.27.92 2.5 1.05 2.67.13.17 1.81 2.77 4.38 3.88.61.26 1.08.41 1.45.53.61.19 1.17.17 1.61.1.49-.07 1.55-.63 1.77-1.24.22-.61.22-1.13.15-1.24-.06-.11-.24-.17-.5-.3Zm-3.11 9.54h-.01c-1.53 0-3.03-.41-4.35-1.19l-3.03.8.81-2.95c-.83-1.36-1.27-2.92-1.27-4.53 0-4.76 3.87-8.63 8.64-8.63 2.31 0 4.48.9 6.12 2.53a8.58 8.58 0 0 1 2.54 6.1c0 4.76-3.87 8.63-8.64 8.63Zm7.35-15.99a10.32 10.32 0 0 0-7.34-3.04C10.35 7.97 6 12.32 6 17.97c0 1.7.44 3.36 1.27 4.82l-1.35 4.93 5.05-1.33a10.34 10.34 0 0 0 4.93 1.25h.01c5.65 0 10.25-4.36 10.25-10.04 0-2.74-1.07-5.32-2.81-7.03Z"
+          />
+        </svg>
+      </a>
+      <button class="cart-fab" type="button" data-cart-toggle aria-label="Abrir carrito">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            d="M6 6h15l-1.5 8.5a2 2 0 0 1-2 1.5H9.2a2 2 0 0 1-2-1.6L5 3H2"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+          <circle cx="9" cy="20" r="1.5" fill="currentColor" />
+          <circle cx="17" cy="20" r="1.5" fill="currentColor" />
+        </svg>
+        <span class="cart-fab-count" data-cart-count>0</span>
+      </button>
+    </div>
+
+    <form class="csrf-token" method="post">
+      {% csrf_token %}
+    </form>
+
+    <script src="{% static 'core/js/theme.js' %}" defer></script>
+    <script src="{% static 'core/js/tienda.js' %}" defer></script>
+  </body>
+</html>

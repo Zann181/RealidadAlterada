@@ -1,0 +1,67 @@
+{% extends "core/base.html" %}
+{% load formatters %}
+
+{% block title %}Proveedores{% endblock %}
+{% block page_title %}Proveedores{% endblock %}
+
+{% block breadcrumbs %}
+  {% include "core/partials/_breadcrumbs.html" with breadcrumbs="Catalogo / Proveedores" %}
+{% endblock %}
+
+{% block page_actions %}
+  <a class="btn btn-primary" href="{% url 'core:proveedores_create' %}">Nuevo proveedor</a>
+{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Listado de proveedores</h2>
+    </div>
+    <div class="card-body">
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Telefono</th>
+              <th>Correo</th>
+              <th>Productos</th>
+              <th>Saldo pendiente</th>
+              <th class="text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for proveedor in proveedores %}
+              <tr>
+                <td>{{ proveedor.nombre }}</td>
+                <td>{{ proveedor.telefono|default:"-" }}</td>
+                <td>{{ proveedor.correo|default:"-" }}</td>
+                <td>{{ proveedor.productos_count }}</td>
+                <td>
+                  {% if proveedor.saldo_pendiente > 0 %}
+                    <span class="badge badge-warning">Debe {{ proveedor.saldo_pendiente|miles }}</span>
+                  {% else %}
+                    <span class="badge badge-success">Sin deuda</span>
+                  {% endif %}
+                </td>
+                <td class="text-right">
+                  <a class="btn btn-outline btn-sm" href="{% url 'core:proveedores_detail' proveedor.id %}">Detalle</a>
+                  <a class="btn btn-outline btn-sm" href="{% url 'core:proveedores_update' proveedor.id %}">Editar</a>
+                  <form method="post" action="{% url 'core:proveedores_delete' proveedor.id %}" class="inline-form">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-ghost btn-sm">Eliminar</button>
+                  </form>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="6" class="text-muted">Sin proveedores registrados.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% include "core/partials/_pagination.html" %}
+    </div>
+  </div>
+{% endblock %}

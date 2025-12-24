@@ -1,0 +1,48 @@
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="brand">{{ SITE_NAME }}</div>
+    <div class="text-muted small">Panel ADMIN</div>
+  </div>
+  <nav class="menu">
+    {% if IS_VENDEDOR or IS_ADMIN %}
+      <a class="menu-link{% if request.path == '/' %} is-active{% endif %}" href="{% url 'core:dashboard' %}">
+        Dashboard
+      </a>
+      <a class="menu-link{% if '/catalogo/' in request.path %} is-active{% endif %}" href="{% url 'core:productos_list' %}">
+        Catalogo
+      </a>
+      <a class="menu-link{% if '/catalogo/proveedores/' in request.path %} is-active{% endif %}" href="{% url 'core:proveedores_list' %}">
+        Proveedores
+      </a>
+      <a class="menu-link{% if '/compras/' in request.path %} is-active{% endif %}" href="{% url 'core:compras_list' %}">
+        Compras
+      </a>
+      <a class="menu-link{% if '/ventas/' in request.path %} is-active{% endif %}" href="{% url 'core:ventas_list' %}">
+        Ventas
+      </a>
+      <a class="menu-link{% if '/gastos/' in request.path %} is-active{% endif %}" href="{% url 'core:gastos_list' %}">
+        Gastos
+      </a>
+      <a
+        class="menu-link{% if '/panel/referidos-whatsapp/' in request.path %} is-active{% endif %}"
+        href="{% url 'core:referidos_whatsapp' %}"
+      >
+        Referidos a WhatsApp
+      </a>
+      <a class="menu-link{% if '/deudores/' in request.path %} is-active{% endif %}" href="{% url 'core:deudores_list' %}">
+        Deudores
+      </a>
+      <a class="menu-link{% if '/deudas/proveedores/' in request.path %} is-active{% endif %}" href="{% url 'core:deuda_proveedor_list' %}">
+        Deudas proveedores
+      </a>
+    {% endif %}
+    {% if IS_CLIENTE %}
+      <a class="menu-link{% if '/cliente/' in request.path %} is-active{% endif %}" href="{% url 'core:cliente_dashboard' %}">
+        Cliente
+      </a>
+    {% endif %}
+    {% if IS_ADMIN %}
+      <a class="menu-link" href="{% url 'admin:index' %}">Admin Django</a>
+    {% endif %}
+  </nav>
+</aside>

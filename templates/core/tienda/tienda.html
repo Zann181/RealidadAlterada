@@ -1,0 +1,123 @@
+{% extends "core/tienda/base_tienda.html" %}
+{% load formatters %}
+
+{% block header_tools %}
+  <div class="store-header-tools">
+    <h2>Productos disponibles</h2>
+    <div class="store-toolbar">
+      <form class="store-search" method="get">
+        <input type="search" name="q" placeholder="Buscar producto" value="{{ q }}" />
+        {% if categoria_id %}
+          <input type="hidden" name="categoria" value="{{ categoria_id }}" />
+        {% endif %}
+        <button type="submit" class="btn btn-ghost btn-sm">Buscar</button>
+      </form>
+      <form class="category-filter" method="get">
+        {% if q %}
+          <input type="hidden" name="q" value="{{ q }}" />
+        {% endif %}
+        <button
+          type="submit"
+          name="categoria"
+          value=""
+          class="chip{% if not categoria_id %} is-active{% endif %}"
+        >
+          Todas
+        </button>
+        {% for categoria in categorias %}
+          <button
+            type="submit"
+            name="categoria"
+            value="{{ categoria.id }}"
+            class="chip{% if categoria_id == categoria.id|stringformat:'s' %} is-active{% endif %}"
+          >
+            {{ categoria.nombre }}
+          </button>
+        {% endfor %}
+      </form>
+    </div>
+  </div>
+{% endblock %}
+
+{% block store_main %}
+  <section class="store-products">
+    <div class="store-grid">
+      {% for producto in productos %}
+        <article
+          class="card store-product"
+          data-product-card
+          data-product-id="{{ producto.id }}"
+          data-product-name="{{ producto.nombre|escapejs }}"
+          data-product-price="{{ producto.precio_venta|floatformat:0 }}"
+          data-product-stock="{{ producto.stock_actual|floatformat:0 }}"
+        >
+          <a class="store-product-link" href="{% url 'core:tienda_producto_detail' producto.id %}">
+            <div class="store-media">
+              {% if producto.imagen %}
+                <img src="{{ producto.imagen.url }}" alt="{{ producto.imagen_alt|default:producto.nombre }}" />
+              {% else %}
+                <div class="product-placeholder">{{ producto.nombre|slice:":1" }}</div>
+              {% endif %}
+            </div>
+          </a>
+          <div class="card-body stack">
+            <div class="product-header">
+              <a class="product-title-link" href="{% url 'core:tienda_producto_detail' producto.id %}">
+                <h3 class="product-title">{{ producto.nombre }}</h3>
+              </a>
+              {% if producto.stock_actual <= 0 %}
+                <span class="badge badge-danger">Agotado</span>
+              {% elif producto.stock_minimo > 0 and producto.stock_actual <= producto.stock_minimo %}
+                <span class="badge badge-warning">Ultimas</span>
+              {% else %}
+                <span class="badge badge-success">Disponible</span>
+              {% endif %}
+            </div>
+            <div class="product-meta text-muted">
+              <span class="meta-price">$ {{ producto.precio_venta|miles }}</span>
+              <span class="meta-category">{{ producto.categoria.nombre|default:"Sin categoria" }}</span>
+              {% if producto.stock_actual <= 0 %}
+                <span class="meta-stock stock-badge is-out">Agotado</span>
+              {% elif producto.stock_minimo > 0 and producto.stock_actual <= producto.stock_minimo %}
+                <span class="meta-stock stock-badge is-low">Stock: {{ producto.stock_actual|miles }}</span>
+              {% else %}
+                <span class="meta-stock stock-badge is-ok">Stock: {{ producto.stock_actual|miles }}</span>
+              {% endif %}
+            </div>
+            <div class="store-actions">
+              <div class="qty-stepper">
+                <button type="button" class="btn btn-ghost btn-sm" data-qty-dec {% if producto.stock_actual <= 0 %}disabled{% endif %}>-</button>
+                <input
+                  type="number"
+                  class="input-compact"
+                  min="1"
+                  max="{{ producto.stock_actual|floatformat:0 }}"
+                  value="1"
+                  step="1"
+                  inputmode="numeric"
+                  data-qty-input
+                  {% if producto.stock_actual <= 0 %}disabled{% endif %}
+                />
+                <button type="button" class="btn btn-ghost btn-sm" data-qty-inc {% if producto.stock_actual <= 0 %}disabled{% endif %}>+</button>
+              </div>
+              <button
+                type="button"
+                class="btn btn-primary btn-sm{% if producto.stock_actual <= 0 %} is-disabled{% endif %}"
+                data-add-cart
+                {% if producto.stock_actual <= 0 %}disabled{% endif %}
+              >
+                Agregar
+              </button>
+            </div>
+          </div>
+        </article>
+      {% empty %}
+        <div class="card">
+          <div class="card-body">
+            <p class="text-muted">No hay productos disponibles.</p>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% load static %}
+<header class="topbar">
+  <div class="topbar-left">
+    <button type="button" class="icon-btn" id="sidebar-toggle" aria-expanded="true" aria-label="Ocultar menu">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+    </button>
+    <a class="brand-logo" href="{% url 'core:dashboard' %}">
+      <img src="{% static 'Realidad Alterada.png' %}" alt="{{ SITE_NAME }}" />
+    </a>
+  </div>
+  <div class="topbar-center">
+    {% if IS_ADMIN or IS_VENDEDOR %}
+      <details class="topbar-quick" aria-label="Accesos rapidos">
+        <summary class="btn btn-outline btn-sm topbar-quick-trigger">
+          Accesos rapidos <span class="topbar-quick-caret" aria-hidden="true">▾</span>
+        </summary>
+        <div class="topbar-quick-menu" role="menu" aria-label="Acciones">
+          <a class="topbar-quick-item" role="menuitem" href="{% url 'core:compras_create' %}">Nueva compra</a>
+          <a class="topbar-quick-item" role="menuitem" href="{% url 'core:ventas_create' %}">Nueva venta</a>
+          <a class="topbar-quick-item" role="menuitem" href="{% url 'core:productos_create' %}">Nuevo producto</a>
+          <a class="topbar-quick-item" role="menuitem" href="{% url 'core:proveedores_create' %}">Nuevo proveedor</a>
+          <a class="topbar-quick-item" role="menuitem" href="{% url 'core:gastos_list' %}">Registrar gasto</a>
+          <a class="topbar-quick-item" role="menuitem" href="{% url 'core:deudores_create' %}">Nuevo deudor</a>
+        </div>
+      </details>
+    {% endif %}
+  </div>
+  <div class="topbar-right row">
+    <button type="button" class="icon-btn" id="theme-toggle" aria-pressed="false" aria-label="Cambiar tema">
+      <span class="icon icon-sun" aria-hidden="true">
+        <svg class="icon" viewBox="0 0 24 24">
+          <path d="M12 4v2M12 18v2M4 12h2M18 12h2M6.34 6.34l1.42 1.42M16.24 16.24l1.42 1.42M6.34 17.66l1.42-1.42M16.24 7.76l1.42-1.42M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </span>
+      <span class="icon icon-moon" aria-hidden="true">
+        <svg class="icon" viewBox="0 0 24 24">
+          <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 1 0 10.5 10.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </span>
+    </button>
+    <div class="user-chip">
+      {% if IS_ADMIN %}
+        <span class="text-muted">ADMIN</span>
+      {% elif IS_VENDEDOR %}
+        <span class="text-muted">VENDEDOR</span>
+      {% elif IS_CLIENTE %}
+        <span class="text-muted">CLIENTE</span>
+      {% else %}
+        <span class="text-muted">USUARIO</span>
+      {% endif %}
+    </div>
+    {% if request.user.is_authenticated %}
+      <span class="text-muted small">{{ request.user.username }}</span>
+    {% endif %}
+    {% if request.user.is_authenticated %}
+      <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline btn-sm">Salir</button>
+      </form>
+    {% endif %}
+  </div>
+</header>

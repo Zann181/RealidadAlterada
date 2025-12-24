@@ -1,0 +1,18 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block title %}
+  {% if subtitle %}{{ subtitle }} | {% endif %}
+  {{ title }} | {{ SITE_NAME|default:_("Django site admin") }}
+{% endblock %}
+
+{% block branding %}
+  <h1 id="site-name"><a href="{% url 'admin:index' %}">{{ SITE_NAME|default:_("Django administration") }}</a></h1>
+{% endblock %}
+
+{% block nav-global %}
+  <div id="nav-global">
+    <a href="{% url 'core:tienda' %}">{% trans "Tienda" %}</a>
+  </div>
+{% endblock %}
+

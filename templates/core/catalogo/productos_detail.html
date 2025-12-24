@@ -1,0 +1,220 @@
+{% extends "core/base.html" %}
+{% load formatters %}
+
+{% block title %}{{ producto.nombre }}{% endblock %}
+{% block page_title %}{{ producto.nombre }}{% endblock %}
+
+{% block breadcrumbs %}
+  {% include "core/partials/_breadcrumbs.html" with breadcrumbs="Catalogo / Productos" %}
+{% endblock %}
+
+{% block page_actions %}
+  <a class="btn btn-outline" href="{% url 'core:productos_list' %}">Volver</a>
+  <a class="btn btn-outline" href="{% url 'core:productos_update' producto.id %}">Editar</a>
+  <form method="post" action="{% url 'core:productos_delete' producto.id %}" class="inline-form">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-ghost">Eliminar</button>
+  </form>
+{% endblock %}
+
+{% block content %}
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Vista previa</h2>
+        <span class="badge {% if producto.activo %}badge-success{% else %}badge-danger{% endif %}">
+          {% if producto.activo %}Activo{% else %}Inactivo{% endif %}
+        </span>
+      </div>
+      <div class="card-body">
+        <div class="product-detail-media">
+          {% if producto.imagen %}
+            <img src="{{ producto.imagen.url }}" alt="{{ producto.imagen_alt|default:producto.nombre }}" />
+          {% else %}
+            <div class="product-placeholder large">Sin imagen</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Informacion general</h2>
+      </div>
+      <div class="card-body stack">
+        <div class="row">
+          <span class="text-muted">SKU</span>
+          <span class="col text-right">{{ producto.sku }}</span>
+        </div>
+        <div class="row">
+          <span class="text-muted">Categoria</span>
+          <span class="col text-right">{{ producto.categoria.nombre|default:"-" }}</span>
+        </div>
+        <div class="row">
+          <span class="text-muted">Proveedor</span>
+          <span class="col text-right">{{ producto.proveedor.nombre|default:"-" }}</span>
+        </div>
+        <div class="row">
+          <span class="text-muted">Unidad</span>
+          <span class="col text-right">{{ producto.unidad }}</span>
+        </div>
+        <div class="row">
+          <span class="text-muted">Descripcion</span>
+          <span class="col text-right">{{ producto.descripcion|default:"-" }}</span>
+        </div>
+        <div class="row">
+          <span class="text-muted">Costo compra</span>
+          <span class="col text-right">{{ producto.costo_compra|miles }}</span>
+        </div>
+        <div class="row">
+          <span class="text-muted">Precio venta</span>
+          <span class="col text-right">{{ producto.precio_venta|miles }}</span>
+        </div>
+        <div class="row">
+          <span class="text-muted">Margen</span>
+          <span class="col text-right">
+            {{ margen_valor|miles }}
+            {% if margen_porcentaje is not None %}
+              ({{ margen_porcentaje|floatformat:1 }}%)
+            {% endif %}
+          </span>
+        </div>
+        <div class="row">
+          <span class="text-muted">IVA</span>
+          <span class="col text-right">{{ producto.iva|percent:0 }}%</span>
+        </div>
+        <div class="row">
+          <span class="text-muted">Stock minimo</span>
+          <span class="col text-right">{{ producto.stock_minimo|miles }}</span>
+        </div>
+        <div class="row">
+          <span class="text-muted">Creado</span>
+          <span class="col text-right">{{ producto.creado_en }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Inventario</h2>
+      </div>
+      <div class="card-body stack">
+        <div class="row">
+          <span class="text-muted">Cantidad en stock</span>
+          <span class="col text-right">
+            {% if inventario %}
+              {{ inventario.cantidad|miles }}
+            {% else %}
+              0
+            {% endif %}
+          </span>
+        </div>
+        <div class="row">
+          <span class="text-muted">Ultimo movimiento</span>
+          <span class="col text-right">
+            {% if ultimo_movimiento %}
+              {{ ultimo_movimiento.tipo }} - {{ ultimo_movimiento.fecha }}
+            {% else %}
+              Sin movimientos
+            {% endif %}
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Relacionados</h2>
+      </div>
+      <div class="card-body stack">
+        <div class="row">
+          <span class="text-muted">Compras</span>
+          <span class="col text-right">{{ compras_count }}</span>
+        </div>
+        <div class="row">
+          <span class="text-muted">Ventas</span>
+          <span class="col text-right">{{ ventas_count }}</span>
+        </div>
+        <div class="row">
+          <span class="text-muted">Deudas clientes</span>
+          <span class="col text-right">{{ deudas_cliente_count }}</span>
+        </div>
+        <div class="row">
+          <span class="text-muted">Deudas proveedores</span>
+          <span class="col text-right">{{ deudas_proveedor_count }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Ultimas compras</h2>
+      </div>
+      <div class="card-body">
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Cantidad</th>
+                <th>Costo unitario</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in ultimas_compras %}
+                <tr>
+                  <td>{{ item.compra.fecha }}</td>
+                  <td>{{ item.cantidad|miles }}</td>
+                  <td>{{ item.costo_unitario|miles }}</td>
+                  <td>{{ item.total_linea|miles }}</td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="4" class="text-muted">Sin compras registradas.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Ultimas ventas</h2>
+      </div>
+      <div class="card-body">
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Cantidad</th>
+                <th>Precio unitario</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in ultimas_ventas %}
+                <tr>
+                  <td>{{ item.venta.fecha }}</td>
+                  <td>{{ item.cantidad|miles }}</td>
+                  <td>{{ item.precio_unitario|miles }}</td>
+                  <td>{{ item.total_linea|miles }}</td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="4" class="text-muted">Sin ventas registradas.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

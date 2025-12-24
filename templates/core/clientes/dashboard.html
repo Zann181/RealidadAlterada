@@ -1,0 +1,20 @@
+{% extends "core/base.html" %}
+
+{% block title %}Portal cliente - {{ SITE_NAME }}{% endblock %}
+{% block page_title %}Portal cliente{% endblock %}
+{% block page_subtitle %}Area exclusiva para clientes{% endblock %}
+
+{% block breadcrumbs %}
+  {% include "core/partials/_breadcrumbs.html" with breadcrumbs="Clientes" %}
+{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Bienvenido</h2>
+    </div>
+    <div class="card-body">
+      <p>Este espacio esta listo para funciones de clientes.</p>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,11 @@
+<div class="card">
+  {% if card_title or card_actions %}
+    <div class="card-header">
+      <h2 class="card-title">{{ card_title }}</h2>
+      <div class="card-actions">{{ card_actions }}</div>
+    </div>
+  {% endif %}
+  <div class="card-body">
+    {{ card_body }}
+  </div>
+</div>

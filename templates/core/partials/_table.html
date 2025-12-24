@@ -1,0 +1,30 @@
+<div class="table-wrap">
+  <table class="table">
+    {% if headers %}
+      <thead>
+        <tr>
+          {% for header in headers %}
+            <th>{{ header }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+    {% endif %}
+    <tbody>
+      {% if rows %}
+        {% for row in rows %}
+          <tr>
+            {% for cell in row %}
+              <td>{{ cell }}</td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="{{ headers|length|default:1 }}" class="text-muted">
+            {{ empty_message|default:"Sin registros" }}
+          </td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>

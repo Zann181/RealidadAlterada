@@ -1,0 +1,949 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load formatters %}
+
+{% block title %}Dashboard - {{ SITE_NAME }}{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %}Panel operativo de {{ SITE_NAME }}{% endblock %}
+
+{% block breadcrumbs %}
+  {% include "core/partials/_breadcrumbs.html" with breadcrumbs="Dashboard" %}
+{% endblock %}
+
+{% block content %}
+  <div class="dashboard-grid">
+    <div class="dashboard-main">
+      <form class="card dashboard-filters" method="get" data-dashboard-filter>
+        <div class="card-header">
+          <div class="stack">
+            <h2 class="card-title">Estadísticas</h2>
+            <span class="text-muted small">Periodo actual: {{ period_label }}</span>
+          </div>
+          <div class="stat-select">
+            <span class="stat-select-label">Vista</span>
+            <details class="stat-dropdown" data-stat-dropdown>
+              <summary class="stat-dropdown-trigger">
+                <span class="stat-summary" data-stat-summary>
+                  {% if "todas" in estadisticas %}
+                    Todas
+                  {% else %}
+                    Seleccionar
+                  {% endif %}
+                </span>
+                <span class="stat-caret" aria-hidden="true">▾</span>
+              </summary>
+              <div class="stat-menu" role="group" aria-label="Seleccionar vistas">
+                <label class="stat-option">
+                  <input
+                    type="checkbox"
+                    name="estadistica"
+                    value="todas"
+                    data-stat-checkbox
+                    {% if "todas" in estadisticas %}checked{% endif %}
+                  />
+                  <span>Todas</span>
+                </label>
+
+                <div class="stat-divider" aria-hidden="true"></div>
+
+                <label class="stat-option">
+                  <input
+                    type="checkbox"
+                    name="estadistica"
+                    value="finanzas"
+                    data-stat-checkbox
+                    {% if "finanzas" in estadisticas %}checked{% endif %}
+                  />
+                  <span>Finanzas</span>
+                </label>
+                <label class="stat-option">
+                  <input
+                    type="checkbox"
+                    name="estadistica"
+                    value="ventas"
+                    data-stat-checkbox
+                    {% if "ventas" in estadisticas %}checked{% endif %}
+                  />
+                  <span>Ventas confirmadas</span>
+                </label>
+                <label class="stat-option">
+                  <input
+                    type="checkbox"
+                    name="estadistica"
+                    value="pendientes"
+                    data-stat-checkbox
+                    {% if "pendientes" in estadisticas %}checked{% endif %}
+                  />
+                  <span>Ventas por confirmar</span>
+                </label>
+                <label class="stat-option">
+                  <input
+                    type="checkbox"
+                    name="estadistica"
+                    value="ganancias"
+                    data-stat-checkbox
+                    {% if "ganancias" in estadisticas %}checked{% endif %}
+                  />
+                  <span>Ganancia bruta</span>
+                </label>
+                <label class="stat-option">
+                  <input
+                    type="checkbox"
+                    name="estadistica"
+                    value="margen"
+                    data-stat-checkbox
+                    {% if "margen" in estadisticas %}checked{% endif %}
+                  />
+                  <span>Margen real</span>
+                </label>
+                <label class="stat-option">
+                  <input
+                    type="checkbox"
+                    name="estadistica"
+                    value="gastos"
+                    data-stat-checkbox
+                    {% if "gastos" in estadisticas %}checked{% endif %}
+                  />
+                  <span>Gastos</span>
+                </label>
+                <label class="stat-option">
+                  <input
+                    type="checkbox"
+                    name="estadistica"
+                    value="productos"
+                    data-stat-checkbox
+                    {% if "productos" in estadisticas %}checked{% endif %}
+                  />
+                  <span>Rendimiento por producto</span>
+                </label>
+              </div>
+            </details>
+          </div>
+          <button class="btn btn-primary btn-sm" type="submit">Aplicar</button>
+        </div>
+        <div class="card-body">
+          <div class="filter-grid">
+            <div class="field">
+              <label for="period">Periodo</label>
+              <select id="period" name="period" data-period-select>
+                <option value="dia" {% if period == "dia" %}selected{% endif %}>Dia</option>
+                <option value="semana" {% if period == "semana" %}selected{% endif %}>Semana</option>
+                <option value="mes" {% if period == "mes" %}selected{% endif %}>Mes</option>
+                <option value="anio" {% if period == "anio" %}selected{% endif %}>Anio</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="fecha">Fecha especifica</label>
+              <input type="date" id="fecha" name="fecha" value="{{ fecha }}" data-date-input />
+            </div>
+          </div>
+          <p class="text-muted small filter-hint">
+            Cambia el periodo y presiona “Aplicar” para refrescar gráficos y el resumen de la derecha.
+          </p>
+        </div>
+      </form>
+
+      <div class="dashboard-charts">
+        <div class="card chart-card chart-ventas" data-stat="ventas finanzas">
+          <div class="card-header">
+            <div class="stack">
+              <h2 class="card-title">Ventas confirmadas</h2>
+              <span class="text-muted small">Periodo: {{ period_label }}</span>
+            </div>
+            <div class="chart-metric">
+              <span class="text-muted small">Total</span>
+              <strong>$ {{ ventas_total|miles }}</strong>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="chart" data-chart data-series="ventas-series" aria-label="Ventas confirmadas"></div>
+            <div class="chart-caption text-muted small">
+              Eje X:
+              {% if period == "anio" %}
+                Meses
+              {% elif period == "semana" %}
+                Dias
+              {% elif period == "mes" %}
+                Dias
+              {% else %}
+                Horas
+              {% endif %}
+            </div>
+            <div class="stat-card-detail is-hidden" data-stat-detail="ventas">
+              <div class="detail-metrics">
+                <div class="detail-metric">
+                  <span class="detail-label">Total ventas</span>
+                  <strong class="detail-value">$ {{ ventas_total|miles }}</strong>
+                </div>
+                <div class="detail-metric">
+                  <span class="detail-label">Ventas</span>
+                  <strong class="detail-value">{{ ventas_count|miles }}</strong>
+                </div>
+                <div class="detail-metric">
+                  <span class="detail-label">Ticket promedio</span>
+                  <strong class="detail-value">$ {{ ventas_ticket_promedio|miles }}</strong>
+                </div>
+              </div>
+
+              <div class="grid grid-2 detail-grid">
+                <div>
+                  <h3 class="detail-title">Por canal</h3>
+                  <div class="table-wrap">
+                    <table class="table table-compact">
+                      <thead>
+                        <tr>
+                          <th>Canal</th>
+                          <th class="text-right">Ventas</th>
+                          <th class="text-right">Total</th>
+                          <th class="text-right">%</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for item in ventas_por_canal %}
+                          <tr>
+                            <td>{{ item.label }}</td>
+                            <td class="text-right">{{ item.count|miles }}</td>
+                            <td class="text-right">$ {{ item.total|miles }}</td>
+                            <td class="text-right">{{ item.percent|floatformat:1 }}%</td>
+                          </tr>
+                        {% empty %}
+                          <tr>
+                            <td colspan="4" class="text-muted">Sin ventas en el periodo.</td>
+                          </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 class="detail-title">Medio de pago</h3>
+                  <div class="table-wrap">
+                    <table class="table table-compact">
+                      <thead>
+                        <tr>
+                          <th>Medio</th>
+                          <th class="text-right">Ventas</th>
+                          <th class="text-right">Total</th>
+                          <th class="text-right">%</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for item in ventas_por_medio_pago %}
+                          <tr>
+                            <td>{{ item.label }}</td>
+                            <td class="text-right">{{ item.count|miles }}</td>
+                            <td class="text-right">$ {{ item.total|miles }}</td>
+                            <td class="text-right">{{ item.percent|floatformat:1 }}%</td>
+                          </tr>
+                        {% empty %}
+                          <tr>
+                            <td colspan="4" class="text-muted">Sin ventas en el periodo.</td>
+                          </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 class="detail-title">Ultimas ventas</h3>
+                <div class="table-wrap">
+                  <table class="table table-compact">
+                    <thead>
+                      <tr>
+                        <th>Fecha</th>
+                        <th>Venta</th>
+                        <th>Cliente</th>
+                        <th>Canal</th>
+                        <th class="text-right">Total</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for venta in ventas_recientes %}
+                        <tr>
+                          <td>{{ venta.fecha|date:"d/m/Y H:i" }}</td>
+                          <td>#{{ venta.id }}</td>
+                          <td>
+                            {% if venta.deudor %}
+                              {{ venta.deudor.nombre }}
+                            {% else %}
+                              -
+                            {% endif %}
+                          </td>
+                          <td>{{ venta.get_canal_display }}</td>
+                          <td class="text-right">$ {{ venta.total|miles }}</td>
+                          <td class="text-right">
+                            <a class="btn btn-outline btn-sm" href="{% url 'core:ventas_detail' venta.id %}">Ver</a>
+                          </td>
+                        </tr>
+                      {% empty %}
+                        <tr>
+                          <td colspan="6" class="text-muted">Sin ventas recientes.</td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      <div class="card chart-card chart-pendientes" data-stat="pendientes">
+        <div class="card-header">
+          <div class="stack">
+            <h2 class="card-title">Ventas por confirmar</h2>
+            <span class="text-muted small">Ventas en borrador</span>
+          </div>
+          <div class="chart-metric">
+            <span class="text-muted small">Total</span>
+            <strong>$ {{ ventas_pendientes_total|miles }}</strong>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="chart" data-chart data-series="ventas-pendientes-series" aria-label="Ventas por confirmar"></div>
+          <div class="chart-caption text-muted small">
+            Eje X:
+            {% if period == "anio" %}
+              Meses
+            {% elif period == "semana" %}
+              Dias
+            {% elif period == "mes" %}
+              Dias
+            {% else %}
+              Horas
+            {% endif %}
+          </div>
+	          <div class="stat-card-detail is-hidden" data-stat-detail="pendientes">
+	            <div class="detail-metrics">
+	              <div class="detail-metric">
+	                <span class="detail-label">Total borradores</span>
+	                <strong class="detail-value">$ {{ ventas_pendientes_total|miles }}</strong>
+	              </div>
+	              <div class="detail-metric">
+	                <span class="detail-label">Ventas en borrador</span>
+	                <strong class="detail-value">{{ ventas_pendientes_count|miles }}</strong>
+	              </div>
+	              <div class="detail-metric">
+	                <span class="detail-label">WhatsApp pendientes</span>
+	                <strong class="detail-value">$ {{ whatsapp_referidos_total|miles }}</strong>
+	              </div>
+	              <div class="detail-metric">
+	                <span class="detail-label">Pedidos WhatsApp</span>
+	                <strong class="detail-value">{{ whatsapp_referidos_count|miles }}</strong>
+	              </div>
+	            </div>
+
+	            <div>
+	              <h3 class="detail-title">Ultimas ventas en borrador</h3>
+              <div class="table-wrap">
+                <table class="table table-compact">
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Venta</th>
+                      <th>Cliente</th>
+                      <th>Canal</th>
+                      <th class="text-right">Total</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for venta in ventas_pendientes_recientes %}
+                      <tr>
+                        <td>{{ venta.fecha|date:"d/m/Y H:i" }}</td>
+                        <td>#{{ venta.id }}</td>
+                        <td>
+                          {% if venta.deudor %}
+                            {{ venta.deudor.nombre }}
+                          {% else %}
+                            -
+                          {% endif %}
+                        </td>
+                        <td>{{ venta.get_canal_display }}</td>
+                        <td class="text-right">$ {{ venta.total|miles }}</td>
+                        <td class="text-right">
+                          <a class="btn btn-outline btn-sm" href="{% url 'core:ventas_detail' venta.id %}">Abrir</a>
+                        </td>
+                      </tr>
+                    {% empty %}
+                      <tr>
+                        <td colspan="6" class="text-muted">Sin borradores recientes.</td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+	                </table>
+	              </div>
+	            </div>
+
+	            <div>
+	              <h3 class="detail-title">Pedidos remitidos a WhatsApp</h3>
+	              <div class="table-wrap">
+	                <table class="table table-compact">
+	                  <thead>
+	                    <tr>
+	                      <th>Fecha</th>
+	                      <th>Pedido</th>
+	                      <th>Cliente</th>
+	                      <th>Telefono</th>
+	                      <th class="text-right">Items</th>
+	                      <th class="text-right">Total</th>
+	                      <th></th>
+	                    </tr>
+	                  </thead>
+	                  <tbody>
+	                    {% for pedido in whatsapp_referidos_recientes %}
+	                      <tr>
+	                        <td>{{ pedido.creado_en|date:"d/m/Y H:i" }}</td>
+	                        <td>#{{ pedido.id }}</td>
+	                        <td>{{ pedido.nombre|default:"-" }}</td>
+	                        <td>{{ pedido.telefono|default:"-" }}</td>
+	                        <td class="text-right">{{ pedido.items_count|miles }}</td>
+	                        <td class="text-right">$ {{ pedido.total|miles }}</td>
+	                        <td class="text-right">
+	                          <form
+	                            method="post"
+	                            action="{% url 'core:referidos_whatsapp_convertir_borrador' pedido.id %}"
+	                            class="inline-form"
+	                            data-confirm="Crear venta borrador y reservar stock para este pedido?"
+	                          >
+	                            {% csrf_token %}
+	                            <button type="submit" class="btn btn-primary btn-sm">Crear borrador</button>
+	                          </form>
+	                        </td>
+	                      </tr>
+	                    {% empty %}
+	                      <tr>
+	                        <td colspan="7" class="text-muted">Sin pedidos WhatsApp pendientes en el periodo.</td>
+	                      </tr>
+	                    {% endfor %}
+	                  </tbody>
+	                </table>
+	              </div>
+	
+	              <div class="detail-actions">
+	                <a class="btn btn-outline btn-sm" href="{% url 'core:referidos_whatsapp' %}">
+	                  Ver todos los referidos
+	                </a>
+	              </div>
+	            </div>
+	          </div>
+	        </div>
+	      </div>
+
+      <div class="card chart-card chart-ganancias" data-stat="ganancias finanzas">
+        <div class="card-header">
+          <div class="stack">
+            <h2 class="card-title">Ganancia bruta</h2>
+            <span class="text-muted small">Ventas confirmadas</span>
+          </div>
+          <div class="chart-metric">
+            <span class="text-muted small">Total</span>
+            <strong>$ {{ ganancias_total|miles }}</strong>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="chart" data-chart data-series="ganancias-series" aria-label="Ganancia estimada"></div>
+          <div class="chart-caption text-muted small">
+            Eje X:
+            {% if period == "anio" %}
+              Meses
+            {% elif period == "semana" %}
+              Dias
+            {% elif period == "mes" %}
+              Dias
+            {% else %}
+              Horas
+            {% endif %}
+          </div>
+          <div class="stat-card-detail is-hidden" data-stat-detail="ganancias">
+            <div class="detail-metrics">
+              <div class="detail-metric">
+                <span class="detail-label">Ganancia bruta</span>
+                <strong class="detail-value">$ {{ ganancias_total|miles }}</strong>
+              </div>
+              <div class="detail-metric">
+                <span class="detail-label">Margen bruto</span>
+                <strong class="detail-value">{{ margen_promedio|floatformat:1 }}%</strong>
+              </div>
+              <div class="detail-metric">
+                <span class="detail-label">Costo de venta</span>
+                <strong class="detail-value">$ {{ costo_ventas_total|miles }}</strong>
+              </div>
+            </div>
+
+            <div>
+              <h3 class="detail-title">Top productos por ganancia</h3>
+              <div class="table-wrap">
+                <table class="table table-compact">
+                  <thead>
+                    <tr>
+                      <th>Producto</th>
+                      <th class="text-right">Unidades</th>
+                      <th class="text-right">Ganancia</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for item in top_productos_ganancia %}
+                      <tr>
+                        <td>
+                          <a href="{% url 'core:productos_detail' item.producto_id %}">{{ item.producto__nombre }}</a>
+                        </td>
+                        <td class="text-right">{{ item.cantidad_total|miles }}</td>
+                        <td class="text-right">$ {{ item.ganancia_total|miles }}</td>
+                      </tr>
+                    {% empty %}
+                      <tr>
+                        <td colspan="3" class="text-muted">Sin ventas confirmadas en el periodo.</td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card chart-card chart-utilidad" data-stat="finanzas">
+        <div class="card-header">
+          <div class="stack">
+            <h2 class="card-title">Utilidad neta</h2>
+            <span class="text-muted small">Ganancia bruta - gastos</span>
+          </div>
+          <div class="chart-metric">
+            <span class="text-muted small">Total</span>
+            <strong class="{% if utilidad_neta_total < 0 %}text-danger{% endif %}">$ {{ utilidad_neta_total|miles }}</strong>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="chart" data-chart data-series="utilidad-neta-series" aria-label="Utilidad neta"></div>
+          <div class="chart-caption text-muted small">
+            Eje X:
+            {% if period == "anio" %}
+              Meses
+            {% elif period == "semana" %}
+              Dias
+            {% elif period == "mes" %}
+              Dias
+            {% else %}
+              Horas
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="card chart-card chart-compras" data-stat="finanzas">
+        <div class="card-header">
+          <div class="stack">
+            <h2 class="card-title">Compras confirmadas</h2>
+            <span class="text-muted small">Inventario del periodo</span>
+          </div>
+          <div class="chart-metric">
+            <span class="text-muted small">Total</span>
+            <strong>$ {{ compras_total|miles }}</strong>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="chart" data-chart data-series="compras-series" aria-label="Compras confirmadas"></div>
+          <div class="chart-caption text-muted small">
+            Eje X:
+            {% if period == "anio" %}
+              Meses
+            {% elif period == "semana" %}
+              Dias
+            {% elif period == "mes" %}
+              Dias
+            {% else %}
+              Horas
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="card chart-card chart-margen-neto" data-stat="margen finanzas">
+        <div class="card-header">
+          <div class="stack">
+            <h2 class="card-title">Margen real (neto)</h2>
+            <span class="text-muted small">Utilidad neta / ventas</span>
+          </div>
+          <div class="chart-metric">
+            <span class="text-muted small">Promedio</span>
+            <strong class="{% if margen_neto_promedio < 0 %}text-danger{% endif %}">{{ margen_neto_promedio|floatformat:1 }}%</strong>
+          </div>
+        </div>
+        <div class="card-body">
+          <div
+            class="chart"
+            data-chart
+            data-chart-format="percent"
+            data-series="margen-neto-series"
+            aria-label="Margen real (neto)"
+          ></div>
+          <div class="chart-caption text-muted small">
+            Eje X:
+            {% if period == "anio" %}
+              Meses
+            {% elif period == "semana" %}
+              Dias
+            {% elif period == "mes" %}
+              Dias
+            {% else %}
+              Horas
+            {% endif %}
+          </div>
+          <div class="stat-card-detail is-hidden" data-stat-detail="margen">
+            <div class="detail-metrics">
+              <div class="detail-metric">
+                <span class="detail-label">Utilidad neta</span>
+                <strong class="detail-value{% if utilidad_neta_total < 0 %} text-danger{% endif %}">
+                  $ {{ utilidad_neta_total|miles }}
+                </strong>
+              </div>
+              <div class="detail-metric">
+                <span class="detail-label">Margen neto</span>
+                <strong class="detail-value{% if margen_neto_promedio < 0 %} text-danger{% endif %}">
+                  {{ margen_neto_promedio|floatformat:1 }}%
+                </strong>
+              </div>
+              <div class="detail-metric">
+                <span class="detail-label">Resultado caja</span>
+                <strong class="detail-value{% if flujo_caja_total < 0 %} text-danger{% endif %}">
+                  $ {{ flujo_caja_total|miles }}
+                </strong>
+              </div>
+            </div>
+
+            <div>
+              <h3 class="detail-title">Detalle por periodo</h3>
+              <div class="table-wrap">
+                <table class="table table-compact">
+                  <thead>
+                    <tr>
+                      <th>Periodo</th>
+                      <th class="text-right">Ventas</th>
+                      <th class="text-right">Utilidad neta</th>
+                      <th class="text-right">Margen neto</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for row in margen_neto_rows %}
+                      <tr>
+                        <td>{{ row.label }}</td>
+                        <td class="text-right">$ {{ row.ventas|miles }}</td>
+                        <td class="text-right{% if row.utilidad_neta < 0 %} text-danger{% endif %}">
+                          $ {{ row.utilidad_neta|miles }}
+                        </td>
+                        <td class="text-right{% if row.margen_neto < 0 %} text-danger{% endif %}">
+                          {{ row.margen_neto|floatformat:1 }}%
+                        </td>
+                      </tr>
+                    {% empty %}
+                      <tr>
+                        <td colspan="4" class="text-muted">Sin datos para el periodo.</td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card chart-card chart-gastos" data-stat="gastos finanzas">
+        <div class="card-header">
+          <div class="stack">
+            <h2 class="card-title">Gastos registrados</h2>
+            <span class="text-muted small">Gastos del periodo</span>
+          </div>
+          <div class="chart-metric">
+            <span class="text-muted small">Total</span>
+            <strong>$ {{ gastos_total|miles }}</strong>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="chart" data-chart data-series="gastos-series" aria-label="Gastos registrados"></div>
+          <div class="chart-caption text-muted small">
+            Eje X:
+            {% if period == "anio" %}
+              Meses
+            {% elif period == "semana" %}
+              Dias
+            {% elif period == "mes" %}
+              Dias
+            {% else %}
+              Horas
+            {% endif %}
+          </div>
+          <div class="stat-card-detail is-hidden" data-stat-detail="gastos">
+            <div class="detail-metrics">
+              <div class="detail-metric">
+                <span class="detail-label">Gastos</span>
+                <strong class="detail-value">$ {{ gastos_total|miles }}</strong>
+              </div>
+              <div class="detail-metric">
+                <span class="detail-label">Registros</span>
+                <strong class="detail-value">{{ gastos_count|miles }}</strong>
+              </div>
+              <div class="detail-metric">
+                <span class="detail-label">Promedio</span>
+                <strong class="detail-value">$ {{ gastos_promedio|miles }}</strong>
+              </div>
+            </div>
+
+            <div class="grid grid-2 detail-grid">
+              <div>
+                <h3 class="detail-title">Por categoria</h3>
+                <div class="table-wrap">
+                  <table class="table table-compact">
+                    <thead>
+                      <tr>
+                        <th>Categoria</th>
+                        <th class="text-right">Items</th>
+                        <th class="text-right">Total</th>
+                        <th class="text-right">%</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for item in gastos_por_categoria %}
+                        <tr>
+                          <td>{{ item.label }}</td>
+                          <td class="text-right">{{ item.count|miles }}</td>
+                          <td class="text-right">$ {{ item.total|miles }}</td>
+                          <td class="text-right">{{ item.percent|floatformat:1 }}%</td>
+                        </tr>
+                      {% empty %}
+                        <tr>
+                          <td colspan="4" class="text-muted">Sin gastos en el periodo.</td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div>
+                <h3 class="detail-title">Ultimos gastos</h3>
+                <div class="table-wrap">
+                  <table class="table table-compact">
+                    <thead>
+                      <tr>
+                        <th>Fecha</th>
+                        <th>Categoria</th>
+                        <th>Detalle</th>
+                        <th class="text-right">Valor</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for gasto in gastos_recientes %}
+                        <tr>
+                          <td>{{ gasto.fecha|date:"d/m/Y H:i" }}</td>
+                          <td>{{ gasto.categoria_gasto.nombre }}</td>
+                          <td>{{ gasto.descripcion|default:"-" }}</td>
+                          <td class="text-right">$ {{ gasto.valor|miles }}</td>
+                        </tr>
+                      {% empty %}
+                        <tr>
+                          <td colspan="4" class="text-muted">Sin gastos recientes.</td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div class="detail-actions">
+              <a class="btn btn-outline btn-sm" href="{% url 'core:gastos_list' %}">Ver gastos</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+	      <div class="card chart-card product-performance-card" data-stat="productos">
+	        <div class="card-header">
+	          <div class="stack">
+	            <h2 class="card-title">Rendimiento por producto</h2>
+	            <span class="text-muted small">Periodo: {{ period_label }}</span>
+	          </div>
+	          <div class="chart-metric">
+	            <span class="text-muted small">Productos</span>
+	            <strong>{{ productos_count|miles }}</strong>
+	          </div>
+	        </div>
+	        <div class="card-body">
+	          <div class="grid grid-2 product-performance-grid">
+	            <div class="stack">
+	              <div
+	                class="chart chart-donut"
+	                data-chart
+	                data-chart-type="donut"
+	                data-series="productos-margen-series"
+	                data-center-label="Unidades vendidas"
+	                data-center-value="{{ productos_margen_unidades|miles }}"
+	                aria-label="Distribucion por margen"
+	              ></div>
+	              <ul class="donut-legend">
+	                {% for item in productos_margen_series %}
+	                  <li>
+	                    <span class="donut-swatch" aria-hidden="true"></span>
+	                    <span class="donut-label">{{ item.label }}</span>
+	                    <span class="donut-meta">{{ item.cantidad|miles }} uds</span>
+	                    <span class="donut-percent">{{ item.percent|floatformat:1 }}%</span>
+	                  </li>
+	                {% empty %}
+	                  <li class="donut-empty">Sin margen positivo en el periodo.</li>
+	                {% endfor %}
+	              </ul>
+	            </div>
+	
+	            <div class="stack">
+	              <div class="stack product-performance-heading">
+	                <h3 class="card-title">Productos mas vendidos</h3>
+	                <span class="text-muted small">Top 5 por unidades</span>
+	              </div>
+	              <ol class="top-products">
+	                {% for item in top_productos %}
+	                  <li>
+	                    <a class="top-products-name" href="{% url 'core:productos_detail' item.producto_id %}">
+	                      {{ item.producto__nombre }}
+	                    </a>
+	                    <span class="top-products-value">{{ item.cantidad_total|miles }}</span>
+	                  </li>
+	                {% empty %}
+	                  <li class="top-products-empty">Sin ventas confirmadas en este periodo.</li>
+	                {% endfor %}
+	              </ol>
+	            </div>
+	          </div>
+
+	          <div class="stat-card-detail is-hidden" data-stat-detail="productos">
+	            <div>
+	              <h3 class="detail-title">Top productos por ganancia</h3>
+	              <div class="table-wrap">
+	                <table class="table table-compact">
+	                  <thead>
+	                    <tr>
+	                      <th>Producto</th>
+	                      <th class="text-right">Unidades</th>
+	                      <th class="text-right">Ganancia</th>
+	                    </tr>
+	                  </thead>
+	                  <tbody>
+	                    {% for item in top_productos_ganancia %}
+	                      <tr>
+	                        <td>
+	                          <a href="{% url 'core:productos_detail' item.producto_id %}">{{ item.producto__nombre }}</a>
+	                        </td>
+	                        <td class="text-right">{{ item.cantidad_total|miles }}</td>
+	                        <td class="text-right">$ {{ item.ganancia_total|miles }}</td>
+	                      </tr>
+	                    {% empty %}
+	                      <tr>
+	                        <td colspan="3" class="text-muted">Sin ventas confirmadas en el periodo.</td>
+	                      </tr>
+	                    {% endfor %}
+	                  </tbody>
+	                </table>
+	              </div>
+	            </div>
+	
+	            <div class="detail-actions">
+	              <a class="btn btn-outline btn-sm" href="{% url 'core:productos_list' %}">Ver catalogo</a>
+	            </div>
+	          </div>
+	        </div>
+	      </div>
+      </div>
+    </div>
+
+    <div class="dashboard-side">
+      <div class="card finance-card">
+        <div class="card-header">
+          <div class="stack">
+            <h2 class="card-title">Resumen financiero</h2>
+            <span class="text-muted small">Periodo: {{ period_label }}</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="metric-list">
+            <div class="metric-item">
+              <div class="metric-head">
+                <span class="metric-label">Ventas confirmadas</span>
+                <strong class="metric-value">$ {{ ventas_total|miles }}</strong>
+              </div>
+              <span class="text-muted small">Periodo: {{ period_label }}</span>
+            </div>
+            <div class="metric-item">
+              <div class="metric-head">
+                <span class="metric-label">Compras confirmadas</span>
+                <strong class="metric-value">$ {{ compras_total|miles }}</strong>
+              </div>
+              <span class="text-muted small">Inventario y costos del periodo</span>
+            </div>
+            <div class="metric-item">
+              <div class="metric-head">
+                <span class="metric-label">Gastos</span>
+                <strong class="metric-value">$ {{ gastos_total|miles }}</strong>
+              </div>
+              <span class="text-muted small">Gastos operativos registrados</span>
+            </div>
+            <div class="metric-item">
+              <div class="metric-head">
+                <span class="metric-label">Ganancia bruta</span>
+                <strong class="metric-value{% if ganancias_total < 0 %} is-negative{% endif %}">$ {{ ganancias_total|miles }}</strong>
+              </div>
+              <span class="text-muted small">Ventas - costo de venta</span>
+            </div>
+            <div class="metric-item">
+              <div class="metric-head">
+                <span class="metric-label">Utilidad neta</span>
+                <strong class="metric-value{% if utilidad_neta_total < 0 %} is-negative{% endif %}">$ {{ utilidad_neta_total|miles }}</strong>
+              </div>
+              <span class="text-muted small">Ganancia bruta - gastos</span>
+            </div>
+            <div class="metric-item">
+              <div class="metric-head">
+                <span class="metric-label">Margen real</span>
+                <strong class="metric-value{% if margen_neto_promedio < 0 %} is-negative{% endif %}">{{ margen_neto_promedio|floatformat:1 }}%</strong>
+              </div>
+              {% if ratio_gastos_sobre_ventas is not None %}
+                <span class="text-muted small">
+                  Bruto {{ margen_promedio|floatformat:1 }}% · Gastos {{ ratio_gastos_sobre_ventas|floatformat:1 }}%
+                </span>
+              {% else %}
+                <span class="text-muted small">Sin ventas para calcular margen</span>
+              {% endif %}
+            </div>
+            <div class="metric-item">
+              <div class="metric-head">
+                <span class="metric-label">Resultado caja</span>
+                <strong class="metric-value{% if flujo_caja_total < 0 %} is-negative{% endif %}">$ {{ flujo_caja_total|miles }}</strong>
+              </div>
+              <span class="text-muted small">
+                Ventas - compras - gastos (margen {{ margen_caja_promedio|floatformat:1 }}%)
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {{ ventas_series|json_script:"ventas-series" }}
+  {{ ventas_pendientes_series|json_script:"ventas-pendientes-series" }}
+  {{ ganancias_series|json_script:"ganancias-series" }}
+  {{ gastos_series|json_script:"gastos-series" }}
+  {{ compras_series|json_script:"compras-series" }}
+  {{ utilidad_neta_series|json_script:"utilidad-neta-series" }}
+  {{ margen_neto_series|json_script:"margen-neto-series" }}
+  {{ productos_margen_series|json_script:"productos-margen-series" }}
+{% endblock %}
+
+{% block extra_scripts %}
+  <script src="{% static 'core/js/dashboard.js' %}" defer></script>
+{% endblock %}

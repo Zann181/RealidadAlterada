@@ -1,0 +1,16 @@
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <a href="{% url 'core:dashboard' %}">Inicio</a>
+  {% if breadcrumbs_items %}
+    {% for item in breadcrumbs_items %}
+      <span class="crumb-sep">/</span>
+      {% if item.url %}
+        <a href="{{ item.url }}">{{ item.label }}</a>
+      {% else %}
+        <span>{{ item.label }}</span>
+      {% endif %}
+    {% endfor %}
+  {% elif breadcrumbs %}
+    <span class="crumb-sep">/</span>
+    <span>{{ breadcrumbs }}</span>
+  {% endif %}
+</nav>

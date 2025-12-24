@@ -1,0 +1,52 @@
+{% extends "core/base.html" %}
+
+{% block title %}Deudores{% endblock %}
+{% block page_title %}Deudores{% endblock %}
+
+{% block breadcrumbs %}
+  {% include "core/partials/_breadcrumbs.html" with breadcrumbs="Deudores" %}
+{% endblock %}
+
+{% block page_actions %}
+  <a class="btn btn-primary" href="{% url 'core:deudores_create' %}">Nuevo deudor</a>
+{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Listado de deudores</h2>
+    </div>
+    <div class="card-body">
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Telefono</th>
+              <th>Correo</th>
+              <th class="text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for deudor in deudores %}
+              <tr>
+                <td>{{ deudor.nombre }}</td>
+                <td>{{ deudor.telefono|default:"-" }}</td>
+                <td>{{ deudor.correo|default:"-" }}</td>
+                <td class="text-right">
+                  <a class="btn btn-outline btn-sm" href="{% url 'core:deudores_detail' deudor.id %}">Ver</a>
+                  <a class="btn btn-ghost btn-sm" href="{% url 'core:deudores_update' deudor.id %}">Editar</a>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="4" class="text-muted">Sin deudores registrados.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% include "core/partials/_pagination.html" %}
+    </div>
+  </div>
+{% endblock %}

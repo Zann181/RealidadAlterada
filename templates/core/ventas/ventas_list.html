@@ -1,0 +1,83 @@
+{% extends "core/base.html" %}
+{% load formatters %}
+
+{% block title %}Ventas{% endblock %}
+{% block page_title %}Ventas{% endblock %}
+
+{% block breadcrumbs %}
+  {% include "core/partials/_breadcrumbs.html" with breadcrumbs="Ventas" %}
+{% endblock %}
+
+{% block page_actions %}
+  <a class="btn btn-primary" href="{% url 'core:ventas_create' %}">Nueva venta</a>
+{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Listado de ventas</h2>
+      <form class="search-form" method="get">
+        <input type="search" name="q" placeholder="Buscar venta o deudor" value="{{ request.GET.q }}" />
+        <select name="categoria">
+          <option value="">Todas las categorias</option>
+          {% for categoria in categorias %}
+            <option value="{{ categoria.id }}" {% if categoria_id == categoria.id|stringformat:"s" %}selected{% endif %}>
+              {{ categoria.nombre }}
+            </option>
+          {% endfor %}
+        </select>
+        <select name="period">
+          <option value="" {% if not period %}selected{% endif %}>Todo</option>
+          <option value="dia" {% if period == "dia" %}selected{% endif %}>Dia</option>
+          <option value="semana" {% if period == "semana" %}selected{% endif %}>Semana</option>
+          <option value="mes" {% if period == "mes" %}selected{% endif %}>Mes</option>
+          <option value="anio" {% if period == "anio" %}selected{% endif %}>Anio</option>
+        </select>
+        <input type="date" name="fecha" value="{{ fecha }}" />
+        <button type="submit" class="btn btn-ghost btn-sm">Buscar</button>
+        <a class="btn btn-outline btn-sm" href="{% url 'core:ventas_list' %}">Limpiar</a>
+      </form>
+    </div>
+    <div class="card-body">
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Fecha</th>
+              <th>Estado</th>
+              <th>Total</th>
+              <th class="text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for venta in ventas %}
+              <tr>
+                <td>#{{ venta.id }}</td>
+                <td>{{ venta.fecha }}</td>
+                <td>
+                  {% if venta.estado == "CONFIRMADA" %}
+                    <span class="badge badge-success">Confirmada</span>
+                  {% elif venta.estado == "ANULADA" %}
+                    <span class="badge badge-danger">Anulada</span>
+                  {% else %}
+                    <span class="badge badge-warning">Borrador</span>
+                  {% endif %}
+                </td>
+                <td>{{ venta.total|miles }}</td>
+                <td class="text-right">
+                  <a class="btn btn-outline btn-sm" href="{% url 'core:ventas_detail' venta.id %}">Ver</a>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="5" class="text-muted">Sin ventas registradas.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% include "core/partials/_pagination.html" %}
+    </div>
+  </div>
+{% endblock %}

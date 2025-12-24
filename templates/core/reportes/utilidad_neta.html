@@ -1,0 +1,23 @@
+{% extends "core/base.html" %}
+
+{% block title %}Reporte utilidad neta{% endblock %}
+{% block page_title %}Reporte utilidad neta{% endblock %}
+
+{% block breadcrumbs %}
+  {% include "core/partials/_breadcrumbs.html" with breadcrumbs="Reportes / Utilidad neta" %}
+{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Utilidad neta mensual</h2>
+    </div>
+    <div class="card-body">
+      {% if data %}
+        <pre>{{ data }}</pre>
+      {% else %}
+        <p class="text-muted">Sin datos para mostrar.</p>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

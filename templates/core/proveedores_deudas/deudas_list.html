@@ -1,0 +1,78 @@
+{% extends "core/base.html" %}
+{% load formatters %}
+
+{% block title %}Deudas proveedores{% endblock %}
+{% block page_title %}Deudas proveedores{% endblock %}
+
+{% block breadcrumbs %}
+  {% include "core/partials/_breadcrumbs.html" with breadcrumbs="Deudas proveedores" %}
+{% endblock %}
+
+{% block page_actions %}
+  <a class="btn btn-primary" href="{% url 'core:deuda_proveedor_create' %}">Nueva deuda</a>
+{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Listado de deudas a proveedores</h2>
+      <form class="search-form" method="get">
+        <select name="period">
+          <option value="" {% if not period %}selected{% endif %}>Todo</option>
+          <option value="dia" {% if period == "dia" %}selected{% endif %}>Dia</option>
+          <option value="semana" {% if period == "semana" %}selected{% endif %}>Semana</option>
+          <option value="mes" {% if period == "mes" %}selected{% endif %}>Mes</option>
+          <option value="anio" {% if period == "anio" %}selected{% endif %}>Anio</option>
+        </select>
+        <input type="date" name="fecha" value="{{ fecha }}" />
+        <button type="submit" class="btn btn-ghost btn-sm">Filtrar</button>
+        <a class="btn btn-outline btn-sm" href="{% url 'core:deuda_proveedor_list' %}">Limpiar</a>
+      </form>
+    </div>
+    <div class="card-body">
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Proveedor</th>
+              <th>Fecha</th>
+              <th>Estado</th>
+              <th>Total</th>
+              <th>Saldo</th>
+              <th class="text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for deuda in deudas %}
+              <tr>
+                <td>#{{ deuda.id }}</td>
+                <td>{{ deuda.proveedor.nombre }}</td>
+                <td>{{ deuda.fecha }}</td>
+                <td>
+                  {% if deuda.estado == "CERRADA" %}
+                    <span class="badge badge-success">Cerrada</span>
+                  {% elif deuda.estado == "ANULADA" %}
+                    <span class="badge badge-danger">Anulada</span>
+                  {% else %}
+                    <span class="badge badge-warning">Abierta</span>
+                  {% endif %}
+                </td>
+                <td>{{ deuda.total_inicial|miles }}</td>
+                <td>{{ deuda.saldo_actual|miles }}</td>
+                <td class="text-right">
+                  <a class="btn btn-outline btn-sm" href="{% url 'core:deuda_proveedor_detail' deuda.id %}">Ver</a>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="7" class="text-muted">Sin deudas registradas.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% include "core/partials/_pagination.html" %}
+    </div>
+  </div>
+{% endblock %}

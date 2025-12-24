@@ -1,0 +1,42 @@
+{% extends "registration/base_auth.html" %}
+
+{% block title %}Admin - {{ SITE_NAME }}{% endblock %}
+{% block header_title %}Panel administrador{% endblock %}
+{% block header_subtitle %}
+  <p class="text-muted">Ingresa con tu usuario de staff.</p>
+{% endblock %}
+
+{% block header_actions %}
+  <div class="row justify-end">
+    <a class="btn btn-ghost btn-sm" href="{% url 'core:tienda' %}">Volver a la tienda</a>
+  </div>
+{% endblock %}
+
+{% block content %}
+  {% if form.errors %}
+    <div class="alert error">
+      <div>Usuario o contrasena incorrectos.</div>
+    </div>
+  {% endif %}
+
+  <form method="post" action="{{ app_path|default:'' }}" class="form">
+    {% csrf_token %}
+    {% if redirect_field_value %}
+      <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+    {% elif next %}
+      <input type="hidden" name="next" value="{{ next }}" />
+    {% endif %}
+    <div class="field">
+      <label for="{{ form.username.id_for_label }}">Usuario</label>
+      {{ form.username }}
+    </div>
+    <div class="field">
+      <label for="{{ form.password.id_for_label }}">Contrasena</label>
+      {{ form.password }}
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Entrar</button>
+      <a class="btn btn-outline" href="{% url 'login' %}">Acceso clientes</a>
+    </div>
+  </form>
+{% endblock %}

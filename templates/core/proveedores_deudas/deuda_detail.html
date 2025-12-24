@@ -1,0 +1,156 @@
+{% extends "core/base.html" %}
+{% load formatters %}
+
+{% block title %}Deuda proveedor #{{ deuda.id }}{% endblock %}
+{% block page_title %}Deuda proveedor #{{ deuda.id }}{% endblock %}
+
+{% block breadcrumbs %}
+  {% include "core/partials/_breadcrumbs.html" with breadcrumbs="Deudas proveedores / Detalle" %}
+{% endblock %}
+
+{% block page_actions %}
+  <a class="btn btn-outline" href="{% url 'core:deuda_proveedor_list' %}">Volver</a>
+  {% if deuda.estado == "ABIERTA" %}
+    <form method="post" action="{% url 'core:deuda_proveedor_cerrar' deuda.id %}" class="inline-form">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">Cerrar deuda</button>
+    </form>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Resumen</h2>
+        {% if deuda.estado == "CERRADA" %}
+          <span class="badge badge-success">Cerrada</span>
+        {% elif deuda.estado == "ANULADA" %}
+          <span class="badge badge-danger">Anulada</span>
+        {% else %}
+          <span class="badge badge-warning">Abierta</span>
+        {% endif %}
+      </div>
+      <div class="card-body stack">
+        <div><strong>Proveedor:</strong> {{ deuda.proveedor.nombre }}</div>
+        <div><strong>Fecha:</strong> {{ deuda.fecha }}</div>
+        <div><strong>Factura:</strong> {{ deuda.numero_factura|default:"-" }}</div>
+        <div><strong>Descripcion:</strong> {{ deuda.descripcion|default:"-" }}</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Totales</h2>
+      </div>
+      <div class="card-body stack">
+        <div class="row">
+          <span class="text-muted">Total inicial</span>
+          <span class="col text-right">{{ deuda.total_inicial|miles }}</span>
+        </div>
+        <div class="row">
+          <span class="text-muted">Saldo actual</span>
+          <span class="col text-right">{{ deuda.saldo_actual|miles }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Productos recibidos</h2>
+    </div>
+    <div class="card-body">
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Cantidad</th>
+              <th>Costo inicial</th>
+              <th>IVA</th>
+              <th>Total linea</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in items %}
+              <tr>
+                <td>{{ item.producto.nombre }}</td>
+                <td>{{ item.cantidad|miles }}</td>
+                <td>{{ item.costo_unitario_inicial|miles }}</td>
+                <td>{{ item.iva|percent:0 }}%</td>
+                <td>{{ item.total_linea|miles }}</td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="5" class="text-muted">Sin productos registrados.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Abonos</h2>
+    </div>
+    <div class="card-body">
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Valor</th>
+              <th>Medio</th>
+              <th>Referencia</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for abono in abonos %}
+              <tr>
+                <td>{{ abono.fecha }}</td>
+                <td>{{ abono.valor|miles }}</td>
+                <td>{{ abono.medio_pago }}</td>
+                <td>{{ abono.referencia|default:"-" }}</td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="4" class="text-muted">Sin abonos registrados.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Agregar producto</h2>
+      </div>
+      <div class="card-body">
+        {% if deuda.estado == "ABIERTA" %}
+          {% url "core:deuda_proveedor_add_item" deuda.id as add_item_url %}
+          {% include "core/partials/_form.html" with form=item_form form_action=add_item_url submit_label="Agregar" %}
+        {% else %}
+          <p class="text-muted">La deuda no admite cambios.</p>
+        {% endif %}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Registrar abono</h2>
+      </div>
+      <div class="card-body">
+        {% if deuda.estado == "ABIERTA" %}
+          {% url "core:deuda_proveedor_add_abono" deuda.id as add_abono_url %}
+          {% include "core/partials/_form.html" with form=abono_form form_action=add_abono_url submit_label="Registrar" %}
+        {% else %}
+          <p class="text-muted">La deuda no admite cambios.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

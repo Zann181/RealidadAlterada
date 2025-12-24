@@ -1,0 +1,47 @@
+{% load querystring %}
+
+{% if page_obj %}
+  <div class="row row-between" style="gap: 12px; margin-top: 12px;">
+    <div class="text-muted small">
+      Mostrando {{ page_obj.start_index }}-{{ page_obj.end_index }} de {{ page_obj.paginator.count }}
+      {% if page_obj.paginator.num_pages > 1 %}
+        · Pagina {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+      {% endif %}
+    </div>
+
+    <div class="row" style="gap: 10px;">
+      <form method="get" class="row" style="gap: 8px; align-items: center;">
+        {% for key, values in request.GET.lists %}
+          {% if key != per_page_param and key != page_param %}
+            {% for value in values %}
+              <input type="hidden" name="{{ key }}" value="{{ value }}">
+            {% endfor %}
+          {% endif %}
+        {% endfor %}
+        <span class="text-muted small">Items</span>
+        <select name="{{ per_page_param }}" onchange="this.form.submit()">
+          {% for option in per_page_options %}
+            <option value="{{ option }}" {% if per_page == option %}selected{% endif %}>{{ option }}</option>
+          {% endfor %}
+        </select>
+      </form>
+
+      {% if page_obj.paginator.num_pages > 1 %}
+        <nav class="pagination" aria-label="Paginacion">
+          {% if page_obj.has_previous %}
+            <a class="btn btn-outline btn-sm" href="?{% querystring page=1 %}">«</a>
+            <a class="btn btn-outline btn-sm" href="?{% querystring page=page_obj.previous_page_number %}">‹</a>
+          {% endif %}
+
+          <span class="text-muted small">Pagina {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+
+          {% if page_obj.has_next %}
+            <a class="btn btn-outline btn-sm" href="?{% querystring page=page_obj.next_page_number %}">›</a>
+            <a class="btn btn-outline btn-sm" href="?{% querystring page=page_obj.paginator.num_pages %}">»</a>
+          {% endif %}
+        </nav>
+      {% endif %}
+    </div>
+  </div>
+{% endif %}
+

@@ -1,0 +1,20 @@
+{% extends "core/base.html" %}
+
+{% block title %}Nueva deuda proveedor{% endblock %}
+{% block page_title %}Nueva deuda proveedor{% endblock %}
+
+{% block breadcrumbs %}
+  {% include "core/partials/_breadcrumbs.html" with breadcrumbs="Deudas proveedores / Nueva" %}
+{% endblock %}
+
+{% block page_actions %}
+  <a class="btn btn-outline" href="{% url 'core:deuda_proveedor_list' %}">Volver</a>
+{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="card-body">
+      {% include "core/partials/_form.html" with form=form submit_label="Crear deuda" %}
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,183 @@
+{% extends "core/base.html" %}
+{% load formatters %}
+
+{% block title %}Proveedor {{ proveedor.nombre }}{% endblock %}
+{% block page_title %}Proveedor {{ proveedor.nombre }}{% endblock %}
+
+{% block breadcrumbs %}
+  {% include "core/partials/_breadcrumbs.html" with breadcrumbs="Catalogo / Proveedores" %}
+{% endblock %}
+
+{% block page_actions %}
+  <a class="btn btn-outline" href="{% url 'core:proveedores_list' %}">Volver</a>
+  <a class="btn btn-outline" href="{% url 'core:proveedores_update' proveedor.id %}">Editar</a>
+  <a class="btn btn-outline" href="{% url 'core:deuda_proveedor_list' %}">Deudas proveedores</a>
+{% endblock %}
+
+{% block content %}
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Resumen</h2>
+      </div>
+      <div class="card-body stack">
+        <div><strong>Nombre:</strong> {{ proveedor.nombre }}</div>
+        <div><strong>Telefono:</strong> {{ proveedor.telefono|default:"-" }}</div>
+        <div><strong>Correo:</strong> {{ proveedor.correo|default:"-" }}</div>
+        <div><strong>NIT:</strong> {{ proveedor.nit|default:"-" }}</div>
+        <div><strong>Direccion:</strong> {{ proveedor.direccion|default:"-" }}</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Totales</h2>
+      </div>
+      <div class="card-body stack">
+        <div class="row">
+          <span class="text-muted">Compras confirmadas</span>
+          <span class="col text-right">{{ compras_count }}</span>
+        </div>
+        <div class="row">
+          <span class="text-muted">Total comprado</span>
+          <span class="col text-right">{{ compras_total|miles }}</span>
+        </div>
+        <div class="row">
+          <span class="text-muted">Deuda abierta</span>
+          <span class="col text-right">{{ deuda_abierta_total|miles }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Compras recientes</h2>
+    </div>
+    <div class="card-body">
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Fecha</th>
+              <th>Estado</th>
+              <th class="text-right">Total</th>
+              <th class="text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for compra in compras %}
+              <tr>
+                <td>#{{ compra.id }}</td>
+                <td>{{ compra.fecha }}</td>
+                <td>
+                  {% if compra.estado == "CONFIRMADA" %}
+                    <span class="badge badge-success">Confirmada</span>
+                  {% elif compra.estado == "ANULADA" %}
+                    <span class="badge badge-danger">Anulada</span>
+                  {% else %}
+                    <span class="badge badge-warning">Borrador</span>
+                  {% endif %}
+                </td>
+                <td class="text-right">{{ compra.total|miles }}</td>
+                <td class="text-right">
+                  <a class="btn btn-outline btn-sm" href="{% url 'core:compras_detail' compra.id %}">Ver</a>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="5" class="text-muted">No hay compras registradas.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Deudas con el proveedor</h2>
+    </div>
+    <div class="card-body">
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Fecha</th>
+              <th>Estado</th>
+              <th class="text-right">Total inicial</th>
+              <th class="text-right">Saldo</th>
+              <th class="text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for deuda in deudas %}
+              <tr>
+                <td>#{{ deuda.id }}</td>
+                <td>{{ deuda.fecha }}</td>
+                <td>
+                  {% if deuda.estado == "ABIERTA" %}
+                    <span class="badge badge-warning">Abierta</span>
+                  {% elif deuda.estado == "ANULADA" %}
+                    <span class="badge badge-danger">Anulada</span>
+                  {% else %}
+                    <span class="badge badge-success">Cerrada</span>
+                  {% endif %}
+                </td>
+                <td class="text-right">{{ deuda.total_inicial|miles }}</td>
+                <td class="text-right">{{ deuda.saldo_actual|miles }}</td>
+                <td class="text-right">
+                  <a class="btn btn-outline btn-sm" href="{% url 'core:deuda_proveedor_detail' deuda.id %}">Ver</a>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="6" class="text-muted">No hay deudas registradas.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Productos asociados</h2>
+    </div>
+    <div class="card-body">
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>SKU</th>
+              <th>Stock</th>
+              <th class="text-right">Precio venta</th>
+              <th class="text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for producto in productos %}
+              <tr>
+                <td>{{ producto.nombre }}</td>
+                <td>{{ producto.sku }}</td>
+                <td>{{ producto.stock_actual|miles }}</td>
+                <td class="text-right">{{ producto.precio_venta|miles }}</td>
+                <td class="text-right">
+                  <a class="btn btn-outline btn-sm" href="{% url 'core:productos_detail' producto.id %}">Ver</a>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="5" class="text-muted">No hay productos asociados.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+{% endblock %}
